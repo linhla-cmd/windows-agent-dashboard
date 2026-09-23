@@ -138,6 +138,7 @@
     /* ── MAIN CONTENT ── */
     .main {
       margin-left: 240px;
+      width: calc(100% - 240px);
       min-height: 100vh;
       display: flex; flex-direction: column;
     }
@@ -206,8 +207,9 @@
     /* ── STAT CARDS ── */
     .stats-container {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
       gap: 24px; padding: 32px; margin-bottom: 0;
+      width: 100%;
     }
     .stat-card {
       background: var(--card);
@@ -309,6 +311,8 @@
     .table-section {
       padding: 32px;
       overflow-x: auto;
+      width: 100%;
+      flex: 1;
     }
 
     table {
