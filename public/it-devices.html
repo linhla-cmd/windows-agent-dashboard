@@ -9,62 +9,50 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #09182b;
-      --bg2: #10243e;
-      --bg3: #193254;
-      --card: #0d2038;
-      --card-hover: #142c4b;
-      --border: #1d406b;
-      --border-light: #2a568c;
-      --border-glow: #3b82f6;
-      --fg: #f1f5f9;
-      --fg2: #cbd5e1;
-      --fg3: #94a3b8;
-      --accent: #1d4ed8;
-      --accent2: #3b82f6;
-      --base-blue: #0b5cff;
-      --base-blue-glow: rgba(11, 92, 255, 0.35);
-      --success: #059669;
-      --success-glow: #10b981;
-      --success-bg: rgba(16, 185, 129, 0.15);
-      --warning: #d97706;
-      --warning-glow: #fbbf24;
-      --warning-bg: rgba(245, 158, 11, 0.15);
-      --danger: #dc2626;
-      --danger-glow: #ef4444;
-      --danger-bg: rgba(239, 68, 68, 0.15);
-      --info: #0891b2;
-      --info-glow: #22d3ee;
-      --info-bg: rgba(6, 182, 212, 0.15);
-      --purple: #7c3aed;
-      --purple-bg: rgba(139, 92, 246, 0.15);
-      --table-text: #f8fafc;
+      /* Background - Light Blue Pastel */
+      --bg: #E8F4F8;
+      --bg2: #F5FAFC;
+      --bg3: #D4EBF2;
+      
+      /* Card & Panel */
+      --card: #FFFFFF;
+      --card-hover: #F0F8FB;
+      --card-shadow: rgba(0, 0, 0, 0.08);
+      
+      /* Border & Accent */
+      --border: #C5E4ED;
+      --border-light: #DFF0F5;
+      --border-glow: #00A8CC;
+      
+      /* Text Color */
+      --fg: #1C3A47;
+      --fg2: #4A6B7D;
+      --fg3: #7A95A5;
+      
+      /* Accent & Status */
+      --accent: #0078B6;
+      --accent2: #00A8CC;
+      --success: #00A651;
+      --success-glow: #00D980;
+      --warning: #FF9800;
+      --danger: #D32F2F;
+      --info: #0288D1;
+      
+      /* Status Color */
+      --status-online: #4CAF50;
+      --status-offline: #999999;
+      --status-maintenance: #FF9800;
+      
+      /* Font */
       --font-sans: 'Plus Jakarta Sans', sans-serif;
       --font-mono: 'JetBrains Mono', monospace;
-    }
-
-    body.light-theme {
-      --bg: #f4f7fb;
-      --bg2: rgba(255, 255, 255, 0.9);
-      --bg3: rgba(226, 232, 240, 0.8);
-      --card: rgba(255, 255, 255, 0.9);
-      --card-hover: #ffffff;
-      --border: #cbd5e1;
-      --border-light: #94a3b8;
-      --border-glow: #0ea5e9;
-      --fg: #0f172a;
-      --fg2: #334155;
-      --fg3: #64748b;
-      --accent: #0284c7;
-      --accent2: #0ea5e9;
-      --table-text: #1e293b;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
       font-family: var(--font-sans);
-      background: linear-gradient(135deg, #09172a 0%, #0d223f 50%, #081526 100%);
+      background: linear-gradient(135deg, #E8F4F8 0%, #F5FAFC 100%);
       color: var(--fg);
       min-height: 100vh;
       overflow-x: hidden;
@@ -73,78 +61,37 @@
       -webkit-font-smoothing: antialiased;
       zoom: 0.9;
     }
-    
-    @keyframes backgroundGridDrift {
-      0% { background-position: 0 0, 0 0; }
-      100% { background-position: 60px 60px, 60px 60px; }
-    }
-    @keyframes backgroundAuroraDrift {
-      0%, 100% { transform: scale(1) translate3d(-1.5%, -1%, 0); opacity: .72; }
-      50% { transform: scale(1.12) translate3d(2%, 2%, 0); opacity: 1; }
-    }
-    body::before {
-      content: '';
-      position: fixed;
-      inset: -60px;
-      background-image: 
-        linear-gradient(rgba(56, 189, 248, 0.04) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(56, 189, 248, 0.04) 1px, transparent 1px);
-      background-size: 30px 30px;
-      animation: backgroundGridDrift 18s linear infinite;
-      will-change: background-position;
-      z-index: -1;
-      pointer-events: none;
-    }
-    body::after {
-      content: '';
-      position: fixed;
-      inset: -12%;
-      background: 
-        radial-gradient(circle at 50% 0%, rgba(11, 92, 255, 0.35) 0%, rgba(15, 60, 120, 0.25) 50%, transparent 85%),
-        radial-gradient(circle at 80% 90%, rgba(37, 99, 235, 0.25) 0%, transparent 60%);
-      animation: backgroundAuroraDrift 16s ease-in-out infinite;
-      will-change: transform, opacity;
-      z-index: -1;
-      pointer-events: none;
-    }
-    body.light-theme::before {
-      background-image: 
-        linear-gradient(rgba(15, 23, 42, 0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(15, 23, 42, 0.03) 1px, transparent 1px);
-    }
-    body.light-theme::after {
-      background: none;
-    }
 
     /* ── SIDEBAR ── */
     .sidebar {
       position: fixed; top: 0; left: 0;
       width: 240px; height: 100vh;
-      background: var(--bg2);
+      background: var(--card);
       border-right: 1px solid var(--border);
       display: flex; flex-direction: column;
       z-index: 100;
-      backdrop-filter: blur(10px);
+      box-shadow: 2px 0 10px rgba(0,0,0,0.05);
     }
     .sidebar-logo {
       padding: 24px;
-      border-bottom: 1px solid var(--border);
+      border-bottom: 1px solid var(--border-light);
       display: flex; flex-direction: column; align-items: center; text-align: center; gap: 12px;
     }
     .sidebar-logo .logo-icon {
       width: 48px; height: 48px;
-      border: 1px solid var(--accent2);
-      border-radius: 4px;
+      border: 2px solid var(--accent2);
+      border-radius: 8px;
       overflow: hidden;
-      box-shadow: 0 0 15px rgba(56, 189, 248, 0.2);
+      box-shadow: 0 2px 8px rgba(0, 168, 204, 0.2);
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 24px;
+      background: linear-gradient(135deg, #E3F2FD 0%, #FFFFFF 100%);
     }
     .sidebar-logo .logo-text {
-      font-size: 18px; font-weight: 900; color: var(--accent2);
-      letter-spacing: 3px; font-family: var(--font-mono); text-shadow: 0 0 8px rgba(56,189,248,0.4);
+      font-size: 18px; font-weight: 900; color: var(--accent);
+      letter-spacing: 1px; font-family: var(--font-mono);
     }
     .sidebar-logo .logo-sub {
       font-size: 9px; color: var(--fg3); font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
@@ -157,33 +104,33 @@
     }
     .nav-item {
       display: flex; align-items: center; gap: 12px;
-      padding: 12px; border-radius: 2px;
+      padding: 12px; border-radius: 8px;
       font-size: 12px; font-weight: 600; color: var(--fg2);
       cursor: pointer; transition: all 0.2s; margin-bottom: 6px;
       text-decoration: none; border: 1px solid transparent;
       text-transform: uppercase; letter-spacing: 1px;
     }
-    .nav-item:hover { background: rgba(56,189,248,0.05); color: var(--fg); border-color: var(--border); }
+    .nav-item:hover { background: var(--bg3); color: var(--accent); }
     .nav-item.active {
-      background: rgba(56,189,248,0.1);
+      background: var(--bg3);
       color: var(--accent2);
       border-color: var(--accent2);
-      box-shadow: inset 3px 0 0 var(--accent2);
+      box-shadow: 0 2px 8px rgba(0, 168, 204, 0.15);
     }
     .nav-item .nav-icon { font-size: 16px; width: 24px; text-align: center; }
     .sidebar-footer {
       padding: 16px;
-      border-top: 1px solid var(--border);
+      border-top: 1px solid var(--border-light);
     }
     .connection-badge {
       display: flex; align-items: center; gap: 8px; justify-content: center;
-      padding: 10px; background: rgba(16,185,129,0.05); border: 1px solid rgba(16,185,129,0.2); border-radius: 2px;
-      font-size: 10px; color: var(--success-glow); font-family: var(--font-mono); font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
+      padding: 10px; background: rgba(0, 166, 81, 0.1); border: 1px solid rgba(0, 166, 81, 0.3); border-radius: 8px;
+      font-size: 10px; color: var(--success); font-family: var(--font-mono); font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
     }
     .connection-dot {
       width: 6px; height: 6px; border-radius: 50%;
       background: var(--success-glow);
-      box-shadow: 0 0 8px var(--success-glow);
+      box-shadow: 0 0 6px var(--success-glow);
       animation: pulse 2s infinite;
     }
     @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
@@ -197,12 +144,12 @@
 
     /* ── TOPBAR ── */
     .topbar {
-      background: var(--bg2);
-      border-bottom: 1px solid var(--border);
+      background: var(--card);
+      border-bottom: 1px solid var(--border-light);
       padding: 16px 32px;
       display: flex; align-items: center; justify-content: space-between;
       position: sticky; top: 0; z-index: 50;
-      backdrop-filter: blur(10px);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     }
     .topbar-left h1 {
       font-size: 20px; font-weight: 900; color: var(--fg);
@@ -210,8 +157,7 @@
       display: flex; align-items: center; gap: 10px;
     }
     .topbar-left h1::before {
-      content: ''; display: inline-block; width: 8px; height: 20px; background: var(--accent2);
-      box-shadow: 0 0 10px var(--accent2);
+      content: '🖥️'; font-size: 24px;
     }
     .topbar-left p {
       font-size: 11px; color: var(--accent2); margin-top: 4px; font-family: var(--font-mono);
@@ -220,28 +166,37 @@
 
     .btn {
       display: inline-flex; align-items: center; gap: 8px;
-      padding: 8px 16px; border-radius: 2px !important; font-size: 11px; font-weight: 700;
-      border: 1px solid var(--border) !important; background: var(--bg3) !important; color: var(--fg) !important;
+      padding: 8px 16px; border-radius: 8px; font-size: 11px; font-weight: 700;
+      border: 1px solid var(--border); background: var(--bg2); color: var(--fg);
       cursor: pointer; transition: all 0.2s; text-transform: uppercase; letter-spacing: 1px;
     }
-    .btn:hover { background: rgba(56, 189, 248, 0.1) !important; color: var(--accent2) !important; border-color: var(--accent2) !important; box-shadow: 0 0 10px rgba(56,189,248,0.2) !important; }
+    .btn:hover { 
+      background: var(--card-hover); 
+      color: var(--accent2); 
+      border-color: var(--accent2); 
+      box-shadow: 0 2px 8px rgba(0, 168, 204, 0.2); 
+    }
     .btn-primary {
-      background: rgba(2, 132, 199, 0.2) !important; color: var(--accent2) !important; border-color: var(--accent2) !important;
+      background: var(--accent2); color: #FFFFFF; border-color: var(--accent2);
+      box-shadow: 0 2px 8px rgba(0, 168, 204, 0.25);
     }
     .btn-primary:hover {
-      background: var(--accent2) !important; color: #000 !important; box-shadow: 0 0 15px var(--accent2) !important;
+      background: var(--accent); color: #FFFFFF; 
+      box-shadow: 0 4px 12px rgba(0, 168, 204, 0.35);
+      transform: translateY(-1px);
     }
     .btn-secondary {
-      background: var(--bg3) !important; color: var(--fg) !important; border: 1px solid var(--border) !important;
+      background: var(--card); color: var(--fg2); border: 1px solid var(--border);
     }
     .btn-secondary:hover {
-      background: rgba(56, 189, 248, 0.1) !important; color: var(--accent2) !important; border-color: var(--accent2) !important;
+      background: var(--bg3); color: var(--accent2); border-color: var(--accent2);
     }
     .btn-danger {
-      background: rgba(239, 68, 68, 0.1) !important; color: var(--danger-glow) !important; border-color: rgba(239, 68, 68, 0.3) !important;
+      background: rgba(211, 47, 47, 0.1); color: var(--danger); border-color: rgba(211, 47, 47, 0.3);
     }
     .btn-danger:hover {
-      background: rgba(239, 68, 68, 0.2) !important; color: #fca5a5 !important; border-color: var(--danger-glow) !important; box-shadow: 0 0 10px rgba(239,68,68,0.3) !important;
+      background: var(--danger); color: #FFFFFF; 
+      box-shadow: 0 2px 8px rgba(211, 47, 47, 0.3);
     }
     .btn-small {
       padding: 6px 12px;
@@ -255,38 +210,50 @@
       gap: 24px; padding: 32px; margin-bottom: 0;
     }
     .stat-card {
-      background: var(--card) !important;
-      border: 1px solid var(--border) !important;
-      border-radius: 4px !important; padding: 24px;
+      background: var(--card);
+      border: 1px solid var(--border-light);
+      border-radius: 12px; padding: 20px;
       display: flex; align-items: center; gap: 20px;
       transition: all 0.3s;
       cursor: pointer;
       user-select: none;
       position: relative;
       overflow: hidden;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-    }
-    .stat-card::after {
-      content:''; position:absolute; top:0; right:0; width:40px; height:40px;
-      background: linear-gradient(225deg, rgba(255,255,255,0.03) 50%, transparent 50%);
+      box-shadow: 0 2px 8px var(--card-shadow);
     }
     .stat-card:hover { 
-      border-color: var(--accent2) !important; transform: translateY(-3px); 
-      box-shadow: 0 10px 20px rgba(0,0,0,0.3), 0 0 20px rgba(56, 189, 248, 0.15); 
+      border-color: var(--accent2); 
+      transform: translateY(-3px); 
+      box-shadow: 0 8px 20px rgba(0, 168, 204, 0.15); 
     }
     .stat-icon {
-      width: 56px; height: 56px; border-radius: 4px;
+      width: 56px; height: 56px; border-radius: 12px;
       display: flex; align-items: center; justify-content: center;
-      font-size: 28px; flex-shrink: 0; border: 1px solid rgba(255,255,255,0.1);
+      font-size: 28px; flex-shrink: 0; 
     }
-    .stat-icon.blue  { background: rgba(2, 132, 199, 0.2); border-color: var(--accent); color: var(--accent2); box-shadow: 0 0 15px rgba(2, 132, 199, 0.3); }
-    .stat-icon.green { background: rgba(16, 185, 129, 0.2); border-color: var(--success); color: var(--success-glow); box-shadow: 0 0 15px rgba(16, 185, 129, 0.3); }
-    .stat-icon.red   { background: rgba(239, 68, 68, 0.2); border-color: var(--danger); color: var(--danger-glow); box-shadow: 0 0 15px rgba(239, 68, 68, 0.3); }
-    .stat-icon.purple{ background: rgba(139, 92, 246, 0.2); border-color: var(--purple); color: #c4b5fd; box-shadow: 0 0 15px rgba(139, 92, 246, 0.3); }
+    .stat-icon.blue  { 
+      background: rgba(0, 168, 204, 0.15); 
+      color: var(--accent2); 
+      border: 1px solid rgba(0, 168, 204, 0.3);
+    }
+    .stat-icon.green { 
+      background: rgba(0, 166, 81, 0.15); 
+      color: var(--success); 
+      border: 1px solid rgba(0, 166, 81, 0.3);
+    }
+    .stat-icon.red   { 
+      background: rgba(211, 47, 47, 0.15); 
+      color: var(--danger); 
+      border: 1px solid rgba(211, 47, 47, 0.3);
+    }
+    .stat-icon.purple{ 
+      background: rgba(255, 152, 0, 0.15); 
+      color: var(--warning); 
+      border: 1px solid rgba(255, 152, 0, 0.3);
+    }
     .stat-info { display: flex; flex-direction: column; }
     .stat-value {
       font-size: 36px; font-weight: 900; line-height: 1; color: var(--fg); font-family: var(--font-mono);
-      text-shadow: 0 0 10px rgba(255,255,255,0.1);
     }
     .stat-label {
       font-size: 10px; font-weight: 800; margin-top: 8px;
@@ -296,8 +263,8 @@
     /* ── FILTERS ── */
     .filters-section {
       padding: 16px 32px;
-      background: linear-gradient(90deg, rgba(15,23,42,.22), rgba(56,189,248,.04));
-      border-bottom: 1px solid var(--border);
+      background: var(--bg2);
+      border-bottom: 1px solid var(--border-light);
       display: flex;
       gap: 15px;
       flex-wrap: wrap;
@@ -319,9 +286,9 @@
     .filter-group select,
     .filter-group input {
       padding: 8px 12px;
-      background: var(--bg2);
+      background: var(--card);
       border: 1px solid var(--border);
-      border-radius: 2px;
+      border-radius: 8px;
       color: var(--fg);
       font-size: 12px;
       font-family: var(--font-sans);
@@ -332,7 +299,7 @@
     .filter-group select:focus,
     .filter-group input:focus {
       border-color: var(--accent2);
-      box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
+      box-shadow: 0 0 0 3px rgba(0, 168, 204, 0.1);
     }
     .filter-group input::placeholder {
       color: var(--fg3);
@@ -348,14 +315,14 @@
       width: 100%;
       border-collapse: collapse;
       background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 4px;
+      border: 1px solid var(--border-light);
+      border-radius: 12px;
       overflow: hidden;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      box-shadow: 0 2px 8px var(--card-shadow);
     }
 
     thead {
-      background: linear-gradient(180deg, var(--bg3) 0%, var(--bg2) 100%);
+      background: linear-gradient(180deg, #E3F2FD 0%, #D1E7F5 100%);
       font-weight: 700;
       color: var(--fg);
       font-size: 11px;
@@ -367,15 +334,20 @@
     th {
       padding: 14px 16px;
       text-align: left;
-      border-bottom: 1px solid var(--border);
+      border-bottom: 2px solid var(--border);
       color: var(--fg);
     }
 
     td {
       padding: 12px 16px;
-      border-bottom: 1px solid rgba(29, 64, 107, 0.5);
+      border-bottom: 1px solid var(--border-light);
       font-size: 12px;
       color: var(--fg2);
+    }
+
+    tbody tr {
+      background: var(--card);
+      transition: background 0.2s;
     }
 
     tbody tr:hover {
@@ -394,33 +366,33 @@
     }
 
     .status-active {
-      background: var(--success-bg);
-      color: var(--success-glow);
-      border: 1px solid rgba(16, 185, 129, 0.3);
+      background: rgba(76, 175, 80, 0.15);
+      color: var(--success);
+      border: 1px solid rgba(76, 175, 80, 0.3);
     }
 
     .status-broken {
-      background: var(--danger-bg);
-      color: var(--danger-glow);
-      border: 1px solid rgba(239, 68, 68, 0.3);
+      background: rgba(211, 47, 47, 0.15);
+      color: var(--danger);
+      border: 1px solid rgba(211, 47, 47, 0.3);
     }
 
     .status-maintenance {
-      background: var(--warning-bg);
-      color: var(--warning-glow);
-      border: 1px solid rgba(245, 158, 11, 0.3);
+      background: rgba(255, 152, 0, 0.15);
+      color: var(--warning);
+      border: 1px solid rgba(255, 152, 0, 0.3);
     }
 
     .status-waiting {
-      background: var(--purple-bg);
-      color: #c4b5fd;
-      border: 1px solid rgba(139, 92, 246, 0.3);
+      background: rgba(255, 193, 7, 0.15);
+      color: #F57C00;
+      border: 1px solid rgba(255, 193, 7, 0.3);
     }
 
     .status-retired {
-      background: rgba(100, 116, 139, 0.15);
-      color: #94a3b8;
-      border: 1px solid rgba(148, 163, 184, 0.3);
+      background: rgba(153, 153, 153, 0.15);
+      color: var(--status-offline);
+      border: 1px solid rgba(153, 153, 153, 0.3);
     }
 
     .actions {
@@ -429,11 +401,11 @@
     }
 
     .btn-icon {
-      background: rgba(2, 132, 199, 0.15);
+      background: rgba(0, 168, 204, 0.1);
       color: var(--accent2);
-      border: 1px solid rgba(56, 189, 248, 0.3);
+      border: 1px solid rgba(0, 168, 204, 0.3);
       padding: 6px 10px;
-      border-radius: 2px;
+      border-radius: 6px;
       cursor: pointer;
       font-size: 14px;
       transition: all 0.2s;
@@ -442,9 +414,9 @@
 
     .btn-icon:hover {
       background: var(--accent2);
-      color: #000;
+      color: #FFFFFF;
       transform: translateY(-1px);
-      box-shadow: 0 4px 8px rgba(56, 189, 248, 0.3);
+      box-shadow: 0 4px 8px rgba(0, 168, 204, 0.25);
     }
 
     .btn-icon[title]:hover::after {
@@ -453,41 +425,35 @@
       bottom: 100%;
       left: 50%;
       transform: translateX(-50%);
-      background: var(--card);
-      color: var(--fg);
+      background: var(--fg);
+      color: #FFFFFF;
       padding: 4px 8px;
-      border-radius: 2px;
+      border-radius: 4px;
       font-size: 10px;
       white-space: nowrap;
       margin-bottom: 4px;
-      border: 1px solid var(--border);
       z-index: 10;
       pointer-events: none;
     }
 
     .btn-danger-icon {
-      background: rgba(239, 68, 68, 0.15) !important;
-      color: var(--danger-glow) !important;
-      border-color: rgba(239, 68, 68, 0.3) !important;
+      background: rgba(211, 47, 47, 0.1);
+      color: var(--danger);
+      border-color: rgba(211, 47, 47, 0.3);
     }
 
     .btn-danger-icon:hover {
-      background: var(--danger-glow) !important;
-      color: #fff !important;
-      box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3) !important;
-    }
-
-    .actions {
-      display: flex;
-      gap: 6px;
+      background: var(--danger);
+      color: #FFFFFF;
+      box-shadow: 0 4px 8px rgba(211, 47, 47, 0.25);
     }
 
     .btn-edit {
-      background: rgba(2, 132, 199, 0.15);
+      background: rgba(0, 168, 204, 0.1);
       color: var(--accent2);
-      border: 1px solid rgba(56, 189, 248, 0.3);
+      border: 1px solid rgba(0, 168, 204, 0.3);
       padding: 4px 8px;
-      border-radius: 2px;
+      border-radius: 6px;
       cursor: pointer;
       font-size: 11px;
       font-weight: 600;
@@ -496,15 +462,15 @@
 
     .btn-edit:hover {
       background: var(--accent2);
-      color: #000;
+      color: #FFFFFF;
     }
 
     .btn-delete {
-      background: rgba(239, 68, 68, 0.15);
-      color: var(--danger-glow);
-      border: 1px solid rgba(239, 68, 68, 0.3);
+      background: rgba(211, 47, 47, 0.1);
+      color: var(--danger);
+      border: 1px solid rgba(211, 47, 47, 0.3);
       padding: 4px 8px;
-      border-radius: 2px;
+      border-radius: 6px;
       cursor: pointer;
       font-size: 11px;
       font-weight: 600;
@@ -512,8 +478,8 @@
     }
 
     .btn-delete:hover {
-      background: var(--danger-glow);
-      color: #fff;
+      background: var(--danger);
+      color: #FFFFFF;
     }
 
     /* ── CONFIRM MODAL ── */
@@ -524,7 +490,7 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(4, 10, 20, 0.85);
+      background: rgba(0, 0, 0, 0.3);
       backdrop-filter: blur(8px);
       z-index: 1100;
       align-items: center;
@@ -538,29 +504,30 @@
     .confirm-content {
       background: var(--card);
       border: 1px solid var(--border-light);
-      border-radius: 4px;
+      border-radius: 16px;
       padding: 30px;
       max-width: 500px;
       width: 90%;
-      box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 30px rgba(239, 68, 68, 0.2);
+      box-shadow: 0 10px 40px rgba(0,0,0,0.15);
       position: relative;
     }
 
     .confirm-content::before {
       content: '';
       position: absolute;
-      top: -1px;
-      left: -1px;
-      right: -1px;
-      height: 2px;
-      background: linear-gradient(90deg, transparent, var(--danger-glow), transparent);
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: var(--danger);
+      border-radius: 16px 16px 0 0;
     }
 
     .confirm-header {
       font-size: 16px;
       font-weight: 800;
       margin-bottom: 15px;
-      color: var(--danger-glow);
+      color: var(--danger);
       text-transform: uppercase;
       letter-spacing: 1.5px;
       font-family: var(--font-mono);
@@ -590,7 +557,7 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(4, 10, 20, 0.85);
+      background: rgba(0, 0, 0, 0.3);
       backdrop-filter: blur(8px);
       z-index: 1100;
       align-items: center;
@@ -604,22 +571,23 @@
     .qr-content {
       background: var(--card);
       border: 1px solid var(--border-light);
-      border-radius: 4px;
+      border-radius: 16px;
       padding: 30px;
       max-width: 700px;
       width: 90%;
-      box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 30px rgba(56, 189, 248, 0.1);
+      box-shadow: 0 10px 40px rgba(0,0,0,0.15);
       position: relative;
     }
 
     .qr-content::before {
       content: '';
       position: absolute;
-      top: -1px;
-      left: -1px;
-      right: -1px;
-      height: 2px;
-      background: linear-gradient(90deg, transparent, var(--accent2), transparent);
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: var(--accent2);
+      border-radius: 16px 16px 0 0;
     }
 
     .qr-header {
@@ -630,7 +598,7 @@
       text-transform: uppercase;
       letter-spacing: 1.5px;
       font-family: var(--font-mono);
-      border-bottom: 1px solid var(--border);
+      border-bottom: 1px solid var(--border-light);
       padding-bottom: 12px;
     }
 
@@ -648,7 +616,7 @@
       width: 250px;
       height: 250px;
       border: 2px solid var(--border);
-      border-radius: 4px;
+      border-radius: 8px;
       padding: 10px;
       background: white;
     }
@@ -684,7 +652,7 @@
       justify-content: flex-end;
       margin-top: 25px;
       padding-top: 15px;
-      border-top: 1px solid var(--border);
+      border-top: 1px solid var(--border-light);
     }
 
     @media print {
@@ -724,7 +692,7 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(4, 10, 20, 0.8);
+      background: rgba(0, 0, 0, 0.3);
       backdrop-filter: blur(8px);
       z-index: 1000;
       align-items: center;
@@ -738,19 +706,25 @@
     .modal-content {
       background: var(--card);
       border: 1px solid var(--border-light);
-      border-radius: 4px;
+      border-radius: 16px;
       padding: 30px;
       max-width: 600px;
       width: 90%;
       max-height: 90vh;
       overflow-y: auto;
-      box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 30px rgba(56, 189, 248, 0.1);
+      box-shadow: 0 10px 40px rgba(0,0,0,0.15);
       position: relative;
     }
 
     .modal-content::before {
-      content: ''; position: absolute; top: -1px; left: -1px; right: -1px; height: 2px;
-      background: linear-gradient(90deg, transparent, var(--accent2), transparent);
+      content: ''; 
+      position: absolute; 
+      top: 0; 
+      left: 0; 
+      right: 0; 
+      height: 4px;
+      background: var(--accent2);
+      border-radius: 16px 16px 0 0;
     }
 
     .modal-header {
@@ -761,7 +735,7 @@
       text-transform: uppercase;
       letter-spacing: 1.5px;
       font-family: var(--font-mono);
-      border-bottom: 1px solid var(--border);
+      border-bottom: 1px solid var(--border-light);
       padding-bottom: 12px;
     }
 
@@ -789,9 +763,9 @@
     .form-group select,
     .form-group textarea {
       padding: 10px 12px;
-      background: var(--bg2);
+      background: var(--card);
       border: 1px solid var(--border);
-      border-radius: 2px;
+      border-radius: 8px;
       color: var(--fg);
       font-size: 12px;
       font-family: var(--font-sans);
@@ -803,7 +777,7 @@
     .form-group select:focus,
     .form-group textarea:focus {
       border-color: var(--accent2);
-      box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
+      box-shadow: 0 0 0 3px rgba(0, 168, 204, 0.1);
     }
 
     .form-group textarea {
@@ -823,12 +797,12 @@
       justify-content: flex-end;
       margin-top: 20px;
       padding-top: 15px;
-      border-top: 1px solid var(--border);
+      border-top: 1px solid var(--border-light);
     }
 
     .modal-footer button {
       padding: 8px 18px;
-      border-radius: 2px;
+      border-radius: 8px;
       cursor: pointer;
       font-size: 11px;
       font-weight: 700;
@@ -837,26 +811,26 @@
     }
 
     .modal-footer .btn-cancel {
-      background: var(--bg3);
+      background: var(--bg2);
       color: var(--fg2);
       border: 1px solid var(--border);
     }
 
     .modal-footer .btn-cancel:hover {
-      background: rgba(255, 255, 255, 0.05);
+      background: var(--bg3);
       color: var(--fg);
     }
 
     .modal-footer .btn-submit {
       background: var(--accent2);
-      color: #000;
+      color: #FFFFFF;
       border: 1px solid var(--accent2);
-      box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+      box-shadow: 0 2px 8px rgba(0, 168, 204, 0.25);
     }
 
     .modal-footer .btn-submit:hover {
-      background: #38bdf8;
-      box-shadow: 0 0 15px rgba(56, 189, 248, 0.5);
+      background: var(--accent);
+      box-shadow: 0 4px 12px rgba(0, 168, 204, 0.35);
     }
 
     /* ── TOAST ── */
@@ -869,20 +843,20 @@
       border-left: 4px solid var(--accent2);
       color: var(--fg);
       padding: 12px 18px;
-      border-radius: 2px;
+      border-radius: 8px;
       z-index: 2000;
       animation: slideIn 0.3s ease;
       max-width: 400px;
       font-size: 12px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
     }
 
     .toast.success {
-      border-left-color: var(--success-glow);
+      border-left-color: var(--success);
     }
 
     .toast.error {
-      border-left-color: var(--danger-glow);
+      border-left-color: var(--danger);
     }
 
     @keyframes slideIn {
@@ -1132,7 +1106,7 @@
     </main>
   </div>
 
-    <!-- Modal Form -->
+  <!-- Modal Form -->
   <div class="modal" id="deviceModal">
     <div class="modal-content">
       <div class="modal-header" id="modalTitle">Thêm thiết bị IT</div>
@@ -1367,7 +1341,7 @@
       const tbody = document.getElementById('devicesBody');
       if (devices.length === 0) {
         tbody.innerHTML =
-          '<tr><td colspan="8" style="text-align: center; padding: 40px; color: #606070;">Không có thiết bị</td></tr>';
+          '<tr><td colspan="8" style="text-align: center; padding: 40px; color: var(--fg3);">Không có thiết bị</td></tr>';
         return;
       }
 
@@ -1443,123 +1417,85 @@
       document.getElementById('deviceModal').classList.add('active');
     }
 
-    async function editDevice(id) {
-      try {
-        const response = await fetch(`/api/it-devices/${id}`);
-        if (!response.ok) throw new Error('Không thể tải thông tin thiết bị');
-        const data = await response.json();
-        const device = data.device;
-
-        editingId = id;
-        document.getElementById('modalTitle').textContent = 'Chỉnh sửa thiết bị IT';
-        document.getElementById('submitBtn').textContent = 'Cập nhật';
-        document.getElementById('deviceId').value = device.id;
-        document.getElementById('deviceName').value = device.device_name || '';
-        document.getElementById('deviceType').value = device.device_type || '';
-        document.getElementById('assetCode').value = device.asset_code || '';
-        document.getElementById('serialNumber').value = device.serial_number || '';
-        document.getElementById('manufacturer').value = device.manufacturer || '';
-        document.getElementById('model').value = device.model || '';
-        document.getElementById('userName').value = device.user_name || '';
-        document.getElementById('department').value = device.department || '';
-        document.getElementById('location').value = device.location || '';
-        document.getElementById('purchaseDate').value = device.purchase_date
-          ? new Date(device.purchase_date).toISOString().split('T')[0]
-          : '';
-        document.getElementById('warrantyExpire').value = device.warranty_expire
-          ? new Date(device.warranty_expire).toISOString().split('T')[0]
-          : '';
-        document.getElementById('status').value = device.status || 'Đang sử dụng';
-        document.getElementById('notes').value = device.notes || '';
-        document.getElementById('deviceModal').classList.add('active');
-      } catch (error) {
-        console.error('Error loading device:', error);
-        showToast('Lỗi khi tải dữ liệu thiết bị: ' + error.message, 'error');
-      }
-    }
-
     function closeModal() {
       document.getElementById('deviceModal').classList.remove('active');
       editingId = null;
     }
 
+    async function editDevice(id) {
+      const device = currentDevices.find(d => d.id === id);
+      if (!device) return;
+
+      editingId = id;
+      document.getElementById('modalTitle').textContent = 'Sửa thiết bị IT';
+      document.getElementById('submitBtn').textContent = 'Cập nhật';
+      document.getElementById('deviceId').value = device.id;
+      document.getElementById('deviceName').value = device.device_name || '';
+      document.getElementById('deviceType').value = device.device_type || '';
+      document.getElementById('assetCode').value = device.asset_code || '';
+      document.getElementById('serialNumber').value = device.serial_number || '';
+      document.getElementById('manufacturer').value = device.manufacturer || '';
+      document.getElementById('model').value = device.model || '';
+      document.getElementById('userName').value = device.user_name || '';
+      document.getElementById('department').value = device.department || '';
+      document.getElementById('location').value = device.location || '';
+      document.getElementById('purchaseDate').value = device.purchase_date || '';
+      document.getElementById('warrantyExpire').value = device.warranty_expire || '';
+      document.getElementById('status').value = device.status || 'Đang sử dụng';
+      document.getElementById('notes').value = device.notes || '';
+      document.getElementById('deviceModal').classList.add('active');
+    }
+
     async function submitDevice(event) {
       event.preventDefault();
 
-      const deviceName = document.getElementById('deviceName').value.trim();
-      const deviceType = document.getElementById('deviceType').value;
-
-      if (!deviceName) {
-        showToast('Vui lòng nhập tên thiết bị', 'error');
-        return;
-      }
-      if (!deviceType) {
-        showToast('Vui lòng chọn loại thiết bị', 'error');
-        return;
-      }
-
-      const payload = {
-        device_name: deviceName,
-        device_type: deviceType,
-        asset_code: document.getElementById('assetCode').value.trim() || null,
-        serial_number: document.getElementById('serialNumber').value.trim() || null,
-        manufacturer: document.getElementById('manufacturer').value.trim() || null,
-        model: document.getElementById('model').value.trim() || null,
-        user_name: document.getElementById('userName').value.trim() || null,
-        department: document.getElementById('department').value.trim() || null,
-        location: document.getElementById('location').value.trim() || null,
-        purchase_date: document.getElementById('purchaseDate').value
-          ? new Date(document.getElementById('purchaseDate').value).getTime()
-          : null,
-        warranty_expire: document.getElementById('warrantyExpire').value
-          ? new Date(document.getElementById('warrantyExpire').value).getTime()
-          : null,
+      const formData = {
+        device_name: document.getElementById('deviceName').value,
+        device_type: document.getElementById('deviceType').value,
+        asset_code: document.getElementById('assetCode').value,
+        serial_number: document.getElementById('serialNumber').value,
+        manufacturer: document.getElementById('manufacturer').value,
+        model: document.getElementById('model').value,
+        user_name: document.getElementById('userName').value,
+        department: document.getElementById('department').value,
+        location: document.getElementById('location').value,
+        purchase_date: document.getElementById('purchaseDate').value,
+        warranty_expire: document.getElementById('warrantyExpire').value,
         status: document.getElementById('status').value,
-        notes: document.getElementById('notes').value.trim() || null
+        notes: document.getElementById('notes').value
       };
 
       try {
-        let response;
-        if (editingId) {
-          response = await fetch(`/api/it-devices/${editingId}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-          });
-        } else {
-          response = await fetch('/api/it-devices', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-          });
-        }
+        const url = editingId ? `/api/it-devices/${editingId}` : '/api/it-devices';
+        const method = editingId ? 'PUT' : 'POST';
+        const response = await fetch(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData)
+        });
 
-        const data = await response.json();
-        if (!response.ok) {
-          throw new Error(data.error || 'Lỗi khi lưu thiết bị');
-        }
+        if (!response.ok) throw new Error('Failed to save device');
 
-        showToast(editingId ? 'Cập nhật thành công' : 'Thêm thiết bị thành công', 'success');
+        showToast(editingId ? 'Cập nhật thiết bị thành công' : 'Thêm thiết bị thành công', 'success');
         closeModal();
         loadDevices();
         loadStats();
         loadDepartments();
       } catch (error) {
         console.error('Error saving device:', error);
-        showToast('Lỗi: ' + error.message, 'error');
+        showToast('Lỗi khi lưu thiết bị', 'error');
       }
     }
 
-    // --- Delete Flow with Confirm Modal ---
     function confirmDeleteDevice(id, name) {
       deletingId = id;
-      document.getElementById('deleteConfirmMessage').innerHTML = 
-        `Bạn có chắc chắn muốn xóa thiết bị <strong>${escapeHtml(name)}</strong>?<br><span style="font-size: 11px; color: var(--fg3);">Hành động này không thể hoàn tác.</span>`;
-      
-      const confirmBtn = document.getElementById('confirmDeleteBtn');
-      confirmBtn.onclick = () => executeDeleteDevice(id);
-
+      document.getElementById('deleteConfirmMessage').textContent =
+        `Bạn có chắc chắn muốn xóa thiết bị "${name}" không? Hành động này không thể hoàn tác.`;
       document.getElementById('deleteConfirmModal').classList.add('active');
+
+      document.getElementById('confirmDeleteBtn').onclick = async () => {
+        await deleteDevice(id);
+      };
     }
 
     function closeDeleteModal() {
@@ -1567,53 +1503,53 @@
       deletingId = null;
     }
 
-    async function executeDeleteDevice(id) {
+    async function deleteDevice(id) {
       try {
         const response = await fetch(`/api/it-devices/${id}`, { method: 'DELETE' });
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.error || 'Lỗi khi xóa thiết bị');
+        if (!response.ok) throw new Error('Failed to delete device');
 
         showToast('Xóa thiết bị thành công', 'success');
         closeDeleteModal();
         loadDevices();
         loadStats();
-        loadDepartments();
       } catch (error) {
         console.error('Error deleting device:', error);
-        showToast('Lỗi khi xóa thiết bị: ' + error.message, 'error');
+        showToast('Lỗi khi xóa thiết bị', 'error');
       }
     }
 
-    // --- QR Code Flow ---
     async function showQRCode(id) {
+      const device = currentDevices.find(d => d.id === id);
+      if (!device) return;
+
       try {
         const response = await fetch(`/api/it-devices/${id}/qr`);
-        if (!response.ok) {
-          const errData = await response.json();
-          throw new Error(errData.error || 'Không thể tạo mã QR');
-        }
-
+        if (!response.ok) throw new Error('Failed to generate QR code');
         const data = await response.json();
+
         currentQrData = data;
 
-        const info = data.deviceInfo || {};
-        document.getElementById('qrModalTitle').textContent = `Mã QR - ${info.device_name || 'Thiết bị IT'}`;
-        document.getElementById('qrImage').src = data.qrDataUrl;
-        document.getElementById('qrAssetCode').textContent = info.asset_code || 'Chưa gán mã';
-        document.getElementById('qrSerialNumber').textContent = info.serial_number || 'N/A';
-        document.getElementById('qrModel').textContent = [info.manufacturer, info.model].filter(Boolean).join(' ') || 'N/A';
-        document.getElementById('qrLocation').textContent = info.location || 'N/A';
-        document.getElementById('qrUserDept').textContent = [info.user_name, info.department].filter(Boolean).join(' - ') || 'Chưa phân bổ';
-        document.getElementById('qrPayloadText').textContent = data.qrPayload || '-';
+        document.getElementById('qrModalTitle').textContent = `Mã QR - ${device.device_name}`;
+        document.getElementById('qrImage').src = data.qrCodeDataUrl;
+        document.getElementById('qrAssetCode').textContent = device.asset_code || '-';
+        document.getElementById('qrSerialNumber').textContent = device.serial_number || '-';
+        document.getElementById('qrModel').textContent = device.model || '-';
+        document.getElementById('qrLocation').textContent = device.location || '-';
+        document.getElementById('qrUserDept').textContent =
+          `${device.user_name || '-'} / ${device.department || '-'}`;
+        document.getElementById('qrPayloadText').textContent = data.payload || '-';
 
-        const downloadBtn = document.getElementById('downloadQrBtn');
-        const filename = `QR_${info.asset_code || ('IT_' + info.id)}.png`;
-        downloadBtn.onclick = () => downloadQR(data.qrDataUrl, filename);
+        document.getElementById('downloadQrBtn').onclick = () => {
+          const a = document.createElement('a');
+          a.href = data.qrCodeDataUrl;
+          a.download = `QR_${device.asset_code || device.device_name}.png`;
+          a.click();
+        };
 
         document.getElementById('qrModal').classList.add('active');
       } catch (error) {
-        console.error('Error fetching QR code:', error);
-        showToast('Lỗi: ' + error.message, 'error');
+        console.error('Error generating QR code:', error);
+        showToast('Lỗi khi tạo mã QR', 'error');
       }
     }
 
@@ -1622,42 +1558,26 @@
       currentQrData = null;
     }
 
-    function downloadQR(dataUrl, filename = 'it-device-qr.png') {
-      if (!dataUrl) return;
-      const a = document.createElement('a');
-      a.href = dataUrl;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      showToast('Đã tải xuống mã QR', 'success');
-    }
-
     function printQR() {
       window.print();
     }
 
     function applyFilters() {
-      const type = document.getElementById('filterType').value;
-      const status = document.getElementById('filterStatus').value;
-      const department = document.getElementById('filterDepartment').value;
-      const search = document.getElementById('searchBox').value.toLowerCase();
+      const typeFilter = document.getElementById('filterType').value.toLowerCase();
+      const statusFilter = document.getElementById('filterStatus').value.toLowerCase();
+      const deptFilter = document.getElementById('filterDepartment').value.toLowerCase();
+      const searchQuery = document.getElementById('searchBox').value.toLowerCase();
 
       const filtered = currentDevices.filter(device => {
-        const matchType = !type || device.device_type === type;
-        const matchStatus = !status || device.status === status;
-        const matchDept = !department || device.department === department;
+        const matchType = !typeFilter || (device.device_type || '').toLowerCase() === typeFilter;
+        const matchStatus = !statusFilter || (device.status || '').toLowerCase() === statusFilter;
+        const matchDept = !deptFilter || (device.department || '').toLowerCase() === deptFilter;
         const matchSearch =
-          !search ||
-          [
-            device.device_name,
-            device.asset_code,
-            device.serial_number,
-            device.user_name
-          ]
-            .join(' ')
-            .toLowerCase()
-            .includes(search);
+          !searchQuery ||
+          (device.device_name || '').toLowerCase().includes(searchQuery) ||
+          (device.asset_code || '').toLowerCase().includes(searchQuery) ||
+          (device.serial_number || '').toLowerCase().includes(searchQuery) ||
+          (device.user_name || '').toLowerCase().includes(searchQuery);
 
         return matchType && matchStatus && matchDept && matchSearch;
       });
@@ -1678,27 +1598,10 @@
       toast.className = `toast ${type}`;
       toast.textContent = message;
       document.body.appendChild(toast);
-      setTimeout(() => toast.remove(), 3000);
+      setTimeout(() => {
+        toast.remove();
+      }, 3000);
     }
-
-    // Keyboard shortcuts & click outside to close
-    document.addEventListener('keydown', event => {
-      if (event.key === 'Escape') {
-        if (document.getElementById('deviceModal').classList.contains('active')) closeModal();
-        if (document.getElementById('deleteConfirmModal').classList.contains('active')) closeDeleteModal();
-        if (document.getElementById('qrModal').classList.contains('active')) closeQrModal();
-      }
-    });
-
-    window.onclick = function(event) {
-      const deviceModal = document.getElementById('deviceModal');
-      const deleteModal = document.getElementById('deleteConfirmModal');
-      const qrModal = document.getElementById('qrModal');
-
-      if (event.target === deviceModal) closeModal();
-      if (event.target === deleteModal) closeDeleteModal();
-      if (event.target === qrModal) closeQrModal();
-    };
   </script>
 </body>
 </html>
