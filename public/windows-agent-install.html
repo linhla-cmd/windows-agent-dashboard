@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cài đặt Windows Agent 1-Click</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
+            color: #E2E8F0;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 40px 20px;
+            background: rgba(37, 99, 235, 0.1);
+            border-radius: 12px;
+            border: 1px solid rgba(37, 99, 235, 0.3);
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: #60A5FA;
+        }
+
+        .header p {
+            font-size: 14px;
+            color: #94A3B8;
+            margin-bottom: 5px;
+        }
+
+        .lightning-icon {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .methods {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .method-card {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 12px;
+            padding: 24px;
+            transition: all 0.3s ease;
+        }
+
+        .method-card:hover {
+            border-color: rgba(37, 99, 235, 0.5);
+            box-shadow: 0 0 20px rgba(37, 99, 235, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .method-card h3 {
+            display: flex;
+            align-items: center;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #60A5FA;
+        }
+
+        .method-card h3 span {
+            font-size: 20px;
+            margin-right: 10px;
+        }
+
+        .method-icon {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            background: rgba(37, 99, 235, 0.2);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+        }
+
+        .code-block {
+            background: #0D2242;
+            border: 1px solid rgba(37, 99, 235, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 12px;
+            position: relative;
+            overflow-x: auto;
+        }
+
+        .code-block code {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: #38BDF8;
+            word-break: break-all;
+            display: block;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(37, 99, 235, 0.8);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .copy-btn:hover {
+            background: #2563EB;
+        }
+
+        .copy-btn.copied {
+            background: #10B981;
+        }
+
+        .description {
+            font-size: 13px;
+            color: #94A3B8;
+            margin-bottom: 12px;
+            line-height: 1.6;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 10px 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background: #2563EB;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1D4ED8;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+
+        .btn-secondary {
+            background: rgba(37, 99, 235, 0.1);
+            color: #60A5FA;
+            border: 1px solid rgba(37, 99, 235, 0.3);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(37, 99, 235, 0.2);
+        }
+
+        .steps {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 30px;
+        }
+
+        .steps h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #60A5FA;
+        }
+
+        .step {
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+        }
+
+        .step:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .step-number {
+            display: inline-block;
+            width: 28px;
+            height: 28px;
+            background: #2563EB;
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 28px;
+            font-weight: 600;
+            margin-right: 10px;
+            font-size: 12px;
+        }
+
+        .step-title {
+            font-weight: 600;
+            color: #E2E8F0;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+        }
+
+        .step-content {
+            margin-left: 38px;
+            color: #94A3B8;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .info-box {
+            background: rgba(59, 130, 246, 0.1);
+            border-left: 3px solid #3B82F6;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 12px;
+            font-size: 12px;
+            color: #93C5FD;
+        }
+
+        .warning-box {
+            background: rgba(245, 158, 11, 0.1);
+            border-left: 3px solid #F59E0B;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 12px;
+            font-size: 12px;
+            color: #FCD34D;
+        }
+
+        .success-message {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 20px;
+            color: #6EE7B7;
+            display: none;
+            text-align: center;
+        }
+
+        .success-message.show {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .feature-list {
+            list-style: none;
+            margin-top: 12px;
+        }
+
+        .feature-list li {
+            padding: 6px 0;
+            color: #94A3B8;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+        }
+
+        .feature-list li:before {
+            content: "✓";
+            color: #10B981;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+
+        @media (max-width: 768px) {
+            .methods {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 22px;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="lightning-icon">⚡</div>
+            <h1>Cài đặt Windows Agent 1-Click</h1>
+            <p>Chọn 1 trong 2 cách cực kỳ đơn giản dưới đây để kết nối máy tính Windows vào Dashboard:</p>
+        </div>
+
+        <!-- Installation Methods -->
+        <div class="methods">
+            <!-- Method 1: PowerShell -->
+            <div class="method-card">
+                <h3><span>🔌</span>Cách 1: Chạy 1 dòng lệnh PowerShell</h3>
+                <p class="description">Mở PowerShell (Run as Administrator) trên máy Windows và chạy lệnh dưới đây. Cực nhanh, chỉ cần 30 giây!</p>
+                
+                <div class="code-block">
+                    <code>powershell -NoProfile -ExecutionPolicy Bypass -Command "Invoke-WebRequest 'http://192.168.1.246:3000/install.bat' -OutFile $env:TEMP\install.bat; & $env:TEMP\install.bat"</code>
+                    <button class="copy-btn" onclick="copyToClipboard(this, 0)">COPY</button>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="showInstallSteps(1)">Hướng dẫn chi tiết</button>
+                </div>
+
+                <ul class="feature-list">
+                    <li>Tự động tải file cài đặt</li>
+                    <li>Chạy với quyền Administrator</li>
+                    <li>Hoàn thành trong 30 giây</li>
+                </ul>
+            </div>
+
+            <!-- Method 2: BAT File -->
+            <div class="method-card">
+                <h3><span>📥</span>Cách 2: Tải file .BAT và chạy</h3>
+                <p class="description">Tải file cài đặt install.bat về máy, sau đó double-click để chạy. Tương thích 100% với Windows!</p>
+                
+                <div class="code-block">
+                    <code>install.bat (100% tự động)</code>
+                    <button class="copy-btn" onclick="downloadFile()">DOWNLOAD</button>
+                </div>
+
+                <div class="button-group">
+                    <a href="/install.bat" class="btn btn-primary">📥 Tải File install.bat</a>
+                    <button class="btn btn-secondary" onclick="showInstallSteps(2)">Hướng dẫn</button>
+                </div>
+
+                <ul class="feature-list">
+                    <li>Double-click để chạy</li>
+                    <li>Không cần terminal/PowerShell</li>
+                    <li>Dễ dàng chia sẻ với người khác</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Installation Steps -->
+        <div class="steps">
+            <h3>📋 Hướng dẫn chi tiết (Cách 1: PowerShell)</h3>
+            
+            <div class="step">
+                <div class="step-title">
+                    <span class="step-number">1</span>
+                    Mở PowerShell với quyền Administrator
+                </div>
+                <div class="step-content">
+                    <p>• Nhấn <strong>Win + R</strong></p>
+                    <p>• Gõ: <strong>powershell</strong></p>
+                    <p>• Nhấn <strong>Ctrl + Shift + Enter</strong></p>
+                    <div class="info-box">💡 Lưu ý: Chỉ chạy với quyền Administrator thì mới hoạt động!</div>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-title">
+                    <span class="step-number">2</span>
+                    Copy & Paste lệnh PowerShell
+                </div>
+                <div class="step-content">
+                    <p>• Click nút "COPY" ở trên để copy lệnh</p>
+                    <p>• Click chuột phải trong PowerShell, chọn "Paste"</p>
+                    <p>• Hoặc dùng <strong>Ctrl + V</strong> để paste</p>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-title">
+                    <span class="step-number">3</span>
+                    Nhấn Enter & Chờ cài đặt hoàn thành
+                </div>
+                <div class="step-content">
+                    <p>• Nhấn <strong>Enter</strong> để chạy lệnh</p>
+                    <p>• PowerShell sẽ tự động tải file cài đặt</p>
+                    <p>• Quá trình cài đặt kéo dài ~30 giây</p>
+                    <p>• Khi hoàn thành, bạn sẽ thấy thông báo: "HOÀN TẤT CÀI ĐẶT!"</p>
+                    <div class="info-box">✓ Máy tính của bạn đã được kết nối vào Dashboard!</div>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-title">
+                    <span class="step-number">4</span>
+                    Kiểm tra kết nối
+                </div>
+                <div class="step-content">
+                    <p>• Truy cập Dashboard: <strong>http://192.168.1.246:3000</strong></p>
+                    <p>• Kiểm tra tab "TỔNG QUAN" → Bạn sẽ thấy máy tính mới trong danh sách</p>
+                    <p>• Status: <strong>✅ Online</strong> = Kết nối thành công!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- What Gets Installed -->
+        <div class="steps">
+            <h3>🔧 Những gì được cài đặt?</h3>
+            
+            <div class="step">
+                <div class="step-content">
+                    <p><strong>📁 Thư mục:</strong> C:\WindowsAgent\</p>
+                    <p><strong>📜 Script:</strong> agent.ps1 (theo dõi máy tính)</p>
+                    <p><strong>⏰ Lịch trình:</strong> Scheduled Task chạy mỗi 5 phút tự động</p>
+                    <p><strong>🌐 Kết nối:</strong> Dashboard tại http://192.168.1.246:3000</p>
+                    <p><strong>📊 Giám sát:</strong> CPU, RAM, Disk, Processes, Services, etc.</p>
+                    <div class="info-box">
+                        💾 Dung lượng sử dụng: &lt; 50MB
+                        <br>
+                        ⚙️ Không ảnh hưởng hiệu suất hệ thống
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Troubleshooting -->
+        <div class="steps">
+            <h3>❓ Gặp lỗi? Đây là những giải pháp:</h3>
+            
+            <div class="step">
+                <div class="step-title">Lỗi: "Scripts is disabled"</div>
+                <div class="step-content">
+                    <p>Chạy lệnh này trong PowerShell (Admin):</p>
+                    <div class="code-block">
+                        <code>Set-ExecutionPolicy RemoteSigned -Scope CurrentUser</code>
+                        <button class="copy-btn" onclick="copyToClipboard(this, 1)">COPY</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-title">Lỗi: "Không thể kết nối tới server"</div>
+                <div class="step-content">
+                    <p>• Kiểm tra kết nối mạng đến: <strong>192.168.1.246:3000</strong></p>
+                    <p>• Chạy: <code>ping 192.168.1.246</code> để kiểm tra</p>
+                    <p>• Nếu firewall chặn, thêm quy tắc cho port 3000</p>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-title">Lỗi: "Permission Denied"</div>
+                <div class="step-content">
+                    <p>• Bạn phải chạy PowerShell với quyền <strong>Administrator</strong></p>
+                    <p>• Click chuột phải vào PowerShell → "Run as administrator"</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Success Message -->
+        <div class="success-message" id="successMessage">
+            ✓ Lệnh đã được copy! Hãy paste vào PowerShell bằng Ctrl+V
+        </div>
+
+        <!-- Footer -->
+        <div style="text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid rgba(148, 163, 184, 0.1);">
+            <p style="color: #64748B; font-size: 12px;">
+                Cần hỗ trợ? Liên hệ: <strong>support@company.com</strong> | Dashboard: <strong>http://192.168.1.246:3000</strong>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        function copyToClipboard(btn, codeIndex) {
+            const codeBlocks = document.querySelectorAll('.code-block code');
+            const text = codeBlocks[codeIndex].innerText;
+
+            // Fallback cho HTTP (không dùng được navigator.clipboard)
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed';
+            textarea.style.left = '-9999px';
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                const successMsg = document.getElementById('successMessage');
+                successMsg.classList.add('show');
+                setTimeout(() => successMsg.classList.remove('show'), 2000);
+                const originalText = btn.innerText;
+                btn.innerText = '✓ COPIED';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.innerText = originalText;
+                    btn.classList.remove('copied');
+                }, 2000);
+            } catch (err) {
+                alert('Copy thất bại. Hãy bôi đen lệnh và nhấn Ctrl+C');
+            }
+            document.body.removeChild(textarea);
+        }
+
+        function downloadFile() {
+            const link = document.createElement('a');
+            link.href = '/install.bat';
+            link.download = 'install.bat';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function showInstallSteps(method) {
+            alert(method === 1 
+                ? 'Xem hướng dẫn chi tiết ở bên dưới!' 
+                : 'Tải file install.bat, double-click để chạy (tự động hoàn thành!)');
+        }
+    </script>
+</body>
+</html>

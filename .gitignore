@@ -1,0 +1,45 @@
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Logs
+*.log
+logs/
+collector.log
+dashboard.log
+
+# Database (sensitive data)
+data/
+data/*.sqlite
+data/*.db
+data/.jwt_secret
+
+# Configuration & Secrets
+config/tokens.json
+.env
+*.env
+
+# Backups
+backups/
+*.bak
+*.bak2
+*.backup
+*.tar.gz
+*.zip
+
+# OS
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# IDE
+.vscode/
+.idea/
+*.iml
+
+# Mobile app (separate repo)
+mobile-app/

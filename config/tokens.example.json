@@ -1,0 +1,6 @@
+{
+  "tokens": [
+    "your-secure-token-here-replace-this-with-actual-token"
+  ],
+  "description": "Copy this file to tokens.json and replace with your actual authentication tokens"
+}

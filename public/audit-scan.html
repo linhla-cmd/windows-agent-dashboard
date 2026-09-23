@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>📱 Mobile Scan - Kiểm Kê Tài Sản QR</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #0f172a;
+      color: #f8fafc;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      background: #1e293b;
+      padding: 14px 16px;
+      border-bottom: 1px solid #334155;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    header h1 { font-size: 16px; font-weight: 700; color: #38bdf8; display: flex; align-items: center; gap: 8px; }
+    .container {
+      flex: 1;
+      padding: 16px;
+      max-width: 500px;
+      margin: 0 auto;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 16px;
+    }
+    label { font-size: 12px; font-weight: 600; color: #94a3b8; margin-bottom: 6px; display: block; }
+    select, input, button {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid #475569;
+      background: #0f172a;
+      color: #fff;
+      font-size: 14px;
+      outline: none;
+    }
+    select:focus, input:focus { border-color: #38bdf8; }
+    .btn-primary {
+      background: #0284c7;
+      color: #fff;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-primary:active { transform: scale(0.98); }
+    #reader {
+      width: 100%;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #000;
+      border: 2px dashed #38bdf8;
+      min-height: 250px;
+    }
+    .progress-wrap {
+      background: #0f172a;
+      border-radius: 8px;
+      height: 10px;
+      overflow: hidden;
+      margin-top: 8px;
+      border: 1px solid #334155;
+    }
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, #38bdf8, #10b981);
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      margin-top: 6px;
+    }
+    .stat-val { font-family: 'JetBrains Mono', monospace; font-weight: 700; color: #38bdf8; }
+    
+    .scan-result {
+      padding: 12px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+    .scan-result.success { background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981; color: #34d399; }
+    .scan-result.warning { background: rgba(245, 158, 11, 0.2); border: 1px solid #f59e0b; color: #fbbf24; }
+    .scan-result.error { background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #f87171; }
+    
+    .recent-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    .recent-item {
+      background: #0f172a;
+      padding: 8px 12px;
+      border-radius: 6px;
+      border-left: 3px solid #38bdf8;
+      font-size: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .recent-item.MATCHED { border-left-color: #10b981; }
+    .recent-item.UNEXPECTED { border-left-color: #f59e0b; }
+    
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>📱 Scan Kiểm Kê Asset</h1>
+    <span id="scanner-status" style="font-size: 12px; color: #94a3b8;">Sẵn sàng</span>
+  </header>
+
+  <div class="container">
+    <!-- Select Ticket -->
+    <div class="card">
+      <label for="ticket-select">📋 Chọn Phiếu Kiểm Kê Đang Mở</label>
+      <select id="ticket-select" onchange="onTicketChange()">
+        <option value="">-- Đang tải danh sách phiếu --</option>
+      </select>
+
+      <div id="ticket-info" style="display:none; margin-top: 12px;">
+        <div class="stat-row">
+          <span>Tiến độ quét:</span>
+          <span class="stat-val" id="progress-text">0 / 0 (0%)</span>
+        </div>
+        <div class="progress-wrap">
+          <div class="progress-bar" id="progress-bar"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scanner Area -->
+    <div class="card" style="padding: 10px;">
+      <div id="reader"></div>
+      
+      <!-- Manual Entry Fallback -->
+      <div style="display: flex; gap: 8px; margin-top: 10px;">
+        <input type="text" id="manual-asset-tag" placeholder="Hoặc nhập Mã Asset Tag (VD: PC-001)...">
+        <button class="btn-primary" style="width: auto; padding: 0 16px; white-space: nowrap;" onclick="submitManualScan()">Gửi</button>
+      </div>
+    </div>
+
+    <!-- Notification / Result -->
+    <div id="scan-result" class="scan-result"></div>
+
+    <!-- Recent Scans -->
+    <div class="card">
+      <label>⏱️ Thiết bị đã quét gần đây</label>
+      <div id="recent-list" class="recent-list">
+        <div style="font-size: 12px; color: #64748b; text-align: center; padding: 10px;">Chưa có quét nào trong phiên làm việc</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let html5QrcodeScanner = null;
+    let currentTicket = null;
+    let isProcessing = false;
+    let recentScans = [];
+
+    // Audio effects using Web Audio API
+    function playBeep(type) {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        if (type === 'success') {
+          osc.frequency.setValueAtTime(880, ctx.currentTime); // A5
+          gain.gain.setValueAtTime(0.1, ctx.currentTime);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.15);
+        } else if (type === 'warning') {
+          osc.frequency.setValueAtTime(440, ctx.currentTime); // A4
+          gain.gain.setValueAtTime(0.2, ctx.currentTime);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.3);
+        } else {
+          osc.frequency.setValueAtTime(220, ctx.currentTime); // A3
+          gain.gain.setValueAtTime(0.25, ctx.currentTime);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.4);
+        }
+      } catch (e) {
+        console.log('Audio not supported or blocked', e);
+      }
+    }
+
+    async function loadOpenTickets() {
+      try {
+        const res = await fetch('/api/audit/tickets?status=IN_PROGRESS');
+        const data = await res.json();
+        const select = document.getElementById('ticket-select');
+        select.innerHTML = '';
+
+        if (!data.tickets || data.tickets.length === 0) {
+          select.innerHTML = '<option value="">-- Không có phiếu kiểm kê nào đang mở --</option>';
+          document.getElementById('ticket-info').style.display = 'none';
+          return;
+        }
+
+        select.innerHTML = '<option value="">-- Chọn phiếu kiểm kê --</option>' + 
+          data.tickets.map(t => `<option value="${t.ticket_id}">${t.ticket_id} - ${t.title} (${t.scanned_items}/${t.total_items})</option>`).join('');
+
+        if (data.tickets.length === 1) {
+          select.value = data.tickets[0].ticket_id;
+          onTicketChange();
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function onTicketChange() {
+      const ticketId = document.getElementById('ticket-select').value;
+      if (!ticketId) {
+        document.getElementById('ticket-info').style.display = 'none';
+        currentTicket = null;
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/audit/tickets/${ticketId}`);
+        const data = await res.json();
+        currentTicket = data.ticket;
+        updateTicketUI(data.ticket, data.stats);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function updateTicketUI(ticket, stats) {
+      document.getElementById('ticket-info').style.display = 'block';
+      const total = ticket.total_items || 0;
+      const scanned = ticket.scanned_items || 0;
+      const pct = total > 0 ? Math.round((scanned / total) * 100) : 0;
+      document.getElementById('progress-text').innerText = `${scanned} / ${total} (${pct}%)`;
+      document.getElementById('progress-bar').style.width = `${pct}%`;
+    }
+
+    async function processScannedCode(decodedText) {
+      if (isProcessing) return;
+      const ticketId = document.getElementById('ticket-select').value;
+      if (!ticketId) {
+        showResult('error', '⚠️ Vui lòng chọn một phiếu kiểm kê trước khi quét mã QR!');
+        playBeep('error');
+        return;
+      }
+
+      isProcessing = true;
+      showResult('warning', `Đang xử lý mã: ${decodedText}...`);
+
+      try {
+        const res = await fetch(`/api/audit/tickets/${ticketId}/scan`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ asset_tag: decodedText, scanned_by: 'Mobile Device' })
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+          if (data.status === 'MATCHED') {
+            showResult('success', `✅ ${data.message}`);
+            playBeep('success');
+          } else if (data.status === 'ALREADY_SCANNED') {
+            showResult('warning', `ℹ️ ${data.message}`);
+            playBeep('warning');
+          } else if (data.status === 'UNEXPECTED') {
+            showResult('error', `${data.message}`);
+            playBeep('warning');
+          }
+          addRecentScan(data.status, decodedText, data.device ? data.device.hostname : '');
+          onTicketChange();
+        } else {
+          showResult('error', `❌ ${data.error || 'Lỗi xử lý'}`);
+          playBeep('error');
+        }
+      } catch (err) {
+        showResult('error', '❌ Lỗi kết nối máy chủ');
+        playBeep('error');
+      } finally {
+        setTimeout(() => { isProcessing = false; }, 1500);
+      }
+    }
+
+    function showResult(type, message) {
+      const box = document.getElementById('scan-result');
+      box.className = `scan-result ${type}`;
+      box.innerHTML = message;
+      box.style.display = 'block';
+    }
+
+    function addRecentScan(status, tag, hostname) {
+      recentScans.unshift({ status, tag, hostname, time: new Date().toLocaleTimeString() });
+      if (recentScans.length > 10) recentScans.pop();
+
+      const container = document.getElementById('recent-list');
+      container.innerHTML = recentScans.map(s => `
+        <div class="recent-item ${s.status}">
+          <div>
+            <strong style="color:#fff;">${s.tag}</strong>
+            <span style="color:#94a3b8; margin-left:6px;">${s.hostname || ''}</span>
+          </div>
+          <span style="color:#64748b; font-size:11px;">${s.time}</span>
+        </div>
+      `).join('');
+    }
+
+    function submitManualScan() {
+      const input = document.getElementById('manual-asset-tag');
+      const val = input.value.trim();
+      if (val) {
+        processScannedCode(val);
+        input.value = '';
+      }
+    }
+
+    // Start Scanner
+    function initScanner() {
+      html5QrcodeScanner = new Html5QrcodeScanner("reader", {
+        fps: 10,
+        qrbox: { width: 220, height: 220 },
+        experimentalFeatures: { useBarCodeDetectorIfSupported: true }
+      });
+
+      html5QrcodeScanner.render((decodedText) => {
+        processScannedCode(decodedText);
+      }, (error) => {
+        // quiet scan errors
+      });
+    }
+
+    window.onload = () => {
+      loadOpenTickets();
+      initScanner();
+    };
+  </script>
+</body>
+</html>

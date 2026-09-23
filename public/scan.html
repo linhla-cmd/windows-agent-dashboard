@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tra cứu Thông tin Tài sản - QR Asset Scan</title>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --border: #334155;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --success: #10b981;
+      --danger: #ef4444;
+      --font-family: 'Times New Roman', Times, serif;
+      --font-mono: 'JetBrains Mono', monospace, Consolas, sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font-family);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 16px;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 20px;
+      margin-top: 10px;
+    }
+    .header h1 {
+      font-size: 22px;
+      color: #60a5fa;
+      margin-bottom: 4px;
+    }
+    .header p {
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      width: 100%;
+      max-width: 480px;
+      padding: 20px;
+      box-shadow: 0 10px 25px -5px rgba(0,0,0,0.5);
+    }
+    .scanner-box {
+      margin-bottom: 16px;
+      text-align: center;
+    }
+    #reader {
+      width: 100%;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px dashed var(--border);
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 6px;
+      font-family: var(--font-family);
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 10px;
+    }
+    .btn:hover { background: var(--primary-hover); }
+    .btn-secondary {
+      background: #475569;
+    }
+    .btn-secondary:hover { background: #334155; }
+    
+    .manual-input-box {
+      margin-top: 14px;
+      display: flex;
+      gap: 8px;
+    }
+    .manual-input {
+      flex: 1;
+      padding: 8px 12px;
+      background: #0f172a;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: #fff;
+      font-family: var(--font-mono);
+      font-size: 13px;
+    }
+    
+    .result-box {
+      display: none;
+      margin-top: 16px;
+      border-top: 1px solid var(--border);
+      padding-top: 16px;
+    }
+    .status-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: bold;
+      margin-bottom: 12px;
+    }
+    .badge-online { background: rgba(16,185,129,0.2); color: #34d399; border: 1px solid rgba(16,185,129,0.4); }
+    .badge-offline { background: rgba(239,68,68,0.2); color: #f87171; border: 1px solid rgba(239,68,68,0.4); }
+    
+    .info-group {
+      margin-bottom: 12px;
+    }
+    .info-label {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 2px;
+    }
+    .info-value {
+      font-size: 16px;
+      font-weight: bold;
+      color: #fff;
+    }
+    .info-value.mono {
+      font-family: var(--font-mono);
+      color: #38bdf8;
+    }
+    .error-msg {
+      color: var(--danger);
+      background: rgba(239,68,68,0.1);
+      padding: 10px;
+      border-radius: 6px;
+      margin-top: 12px;
+      display: none;
+      font-size: 14px;
+      text-align: center;
+    }
+  </style>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+</head>
+<body>
+
+  <div class="header">
+    <h1>📱 TRA CỨU TÀI SẢN (QR SCAN)</h1>
+    <p>Quét mã QR 2x2cm trên máy để tra cứu dữ liệu</p>
+  </div>
+
+  <div class="card">
+    <div class="scanner-box">
+      <div id="reader"></div>
+      <button id="btn-toggle-cam" class="btn" onclick="toggleScanner()">📷 Bật Camera Quét Mã</button>
+    </div>
+
+    <div class="manual-input-box">
+      <input type="text" id="manual-query" class="manual-input" placeholder="Hoặc nhập Mã TS / Hostname / QR..." />
+      <button class="btn btn-secondary" style="width: auto; margin-top:0;" onclick="manualSearch()">Tìm</button>
+    </div>
+
+    <div id="error-message" class="error-msg"></div>
+
+    <div id="result-box" class="result-box">
+      <div id="online-status"></div>
+      
+      <div class="info-group">
+        <div class="info-label">Tên máy (Hostname):</div>
+        <div id="res-hostname" class="info-value mono">-</div>
+      </div>
+
+      <div class="info-group">
+        <div class="info-label">Mã tài sản (Asset Tag):</div>
+        <div id="res-asset-tag" class="info-value mono">-</div>
+      </div>
+
+      <div class="info-group">
+        <div class="info-label">Người sử dụng / Phòng ban:</div>
+        <div id="res-user-dept" class="info-value">-</div>
+      </div>
+
+      <div class="info-group">
+        <div class="info-label">Màn hình / Mã tài sản màn hình:</div>
+        <div id="res-monitor" class="info-value mono">-</div>
+      </div>
+
+      <div class="info-group">
+        <div class="info-label">Model / Địa chỉ IP:</div>
+        <div id="res-model-ip" class="info-value" style="font-size: 14px; color: var(--text-muted);">-</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let html5QrCode = null;
+    let isScanning = false;
+
+    async function lookupDevice(query) {
+      const errorMsg = document.getElementById('error-message');
+      const resultBox = document.getElementById('result-box');
+      errorMsg.style.display = 'none';
+      errorMsg.textContent = '';
+      
+      try {
+        const res = await fetch(`/api/qr/lookup?q=${encodeURIComponent(query)}`);
+        const json = await res.json();
+        
+        if (!res.ok || !json.success) {
+          throw new Error(json.error || 'Không tìm thấy dữ liệu');
+        }
+
+        const data = json.data;
+        document.getElementById('res-hostname').textContent = data.hostname;
+        document.getElementById('res-asset-tag').textContent = data.asset_tag;
+        document.getElementById('res-user-dept').textContent = data.user_department;
+        document.getElementById('res-monitor').textContent = data.monitor;
+        document.getElementById('res-model-ip').textContent = `${data.model} | IP: ${data.ip}`;
+
+        const statusEl = document.getElementById('online-status');
+        if (data.is_online) {
+          statusEl.innerHTML = '<span class="status-badge badge-online">🟢 Đang Online</span>';
+        } else {
+          statusEl.innerHTML = '<span class="status-badge badge-offline">🔴 Đang Offline</span>';
+        }
+
+        resultBox.style.display = 'block';
+
+        // Stop scanning after success
+        if (isScanning && html5QrCode) {
+          stopScanner();
+        }
+      } catch (err) {
+        resultBox.style.display = 'none';
+        errorMsg.textContent = err.message;
+        errorMsg.style.display = 'block';
+      }
+    }
+
+    function toggleScanner() {
+      if (isScanning) {
+        stopScanner();
+      } else {
+        startScanner();
+      }
+    }
+
+    function startScanner() {
+      html5QrCode = new Html5Qrcode("reader");
+      const config = { fps: 10, qrbox: { width: 220, height: 220 } };
+      
+      html5QrCode.start(
+        { facingMode: "environment" },
+        config,
+        (decodedText) => {
+          console.log("QR Scanned:", decodedText);
+          lookupDevice(decodedText);
+        },
+        (errorMessage) => {
+          // parse error, ignore
+        }
+      ).then(() => {
+        isScanning = true;
+        document.getElementById('btn-toggle-cam').textContent = '⏹ Dừng Camera';
+        document.getElementById('btn-toggle-cam').classList.add('btn-secondary');
+      }).catch(err => {
+        console.error("Camera error:", err);
+        alert("Không thể khởi động Camera: " + err);
+      });
+    }
+
+    function stopScanner() {
+      if (html5QrCode && isScanning) {
+        html5QrCode.stop().then(() => {
+          html5QrCode.clear();
+          isScanning = false;
+          document.getElementById('btn-toggle-cam').textContent = '📷 Bật Camera Quét Mã';
+          document.getElementById('btn-toggle-cam').classList.remove('btn-secondary');
+        });
+      }
+    }
+
+    function manualSearch() {
+      const q = document.getElementById('manual-query').value.trim();
+      if (q) lookupDevice(q);
+    }
+
+    // Auto lookup if URL has param ?q=...
+    window.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const q = urlParams.get('q');
+      if (q) {
+        document.getElementById('manual-query').value = q;
+        lookupDevice(q);
+      }
+    });
+  </script>
+</body>
+</html>
