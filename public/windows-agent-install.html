@@ -3,550 +3,271 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cài đặt Windows Agent 1-Click</title>
+    <title>Windows Agent - Hướng dẫn Cài đặt</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
-            color: #E2E8F0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
+            color: #333;
         }
-
         .container {
-            max-width: 1000px;
+            max-width: 900px;
             margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
         }
-
         .header {
+            background: linear-gradient(135deg, #2563EB 0%, #1e40af 100%);
+            color: white;
+            padding: 40px 30px;
             text-align: center;
-            margin-bottom: 40px;
-            padding: 40px 20px;
-            background: rgba(37, 99, 235, 0.1);
-            border-radius: 12px;
-            border: 1px solid rgba(37, 99, 235, 0.3);
         }
-
         .header h1 {
-            font-size: 28px;
-            font-weight: 700;
+            font-size: 2.2em;
             margin-bottom: 10px;
-            color: #60A5FA;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
-
         .header p {
-            font-size: 14px;
-            color: #94A3B8;
-            margin-bottom: 5px;
+            font-size: 1.1em;
+            opacity: 0.95;
         }
-
-        .lightning-icon {
-            font-size: 32px;
-            margin-bottom: 10px;
+        .content {
+            padding: 40px 30px;
         }
-
-        .methods {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
+        .method {
+            background: #f8fafc;
+            border-left: 4px solid #2563EB;
+            border-radius: 8px;
+            padding: 25px;
             margin-bottom: 30px;
         }
-
-        .method-card {
-            background: rgba(15, 23, 42, 0.8);
-            border: 1px solid rgba(148, 163, 184, 0.2);
-            border-radius: 12px;
-            padding: 24px;
-            transition: all 0.3s ease;
-        }
-
-        .method-card:hover {
-            border-color: rgba(37, 99, 235, 0.5);
-            box-shadow: 0 0 20px rgba(37, 99, 235, 0.2);
-            transform: translateY(-2px);
-        }
-
-        .method-card h3 {
+        .method h2 {
+            color: #2563EB;
+            font-size: 1.5em;
+            margin-bottom: 15px;
             display: flex;
             align-items: center;
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 16px;
-            color: #60A5FA;
         }
-
-        .method-card h3 span {
-            font-size: 20px;
-            margin-right: 10px;
-        }
-
-        .method-icon {
-            display: inline-block;
-            width: 24px;
-            height: 24px;
-            background: rgba(37, 99, 235, 0.2);
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 10px;
-        }
-
-        .code-block {
-            background: #0D2242;
-            border: 1px solid rgba(37, 99, 235, 0.3);
-            border-radius: 8px;
-            padding: 12px;
-            margin-bottom: 12px;
-            position: relative;
-            overflow-x: auto;
-        }
-
-        .code-block code {
-            font-family: 'Courier New', monospace;
-            font-size: 12px;
-            color: #38BDF8;
-            word-break: break-all;
-            display: block;
-        }
-
-        .copy-btn {
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            background: rgba(37, 99, 235, 0.8);
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 12px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .copy-btn:hover {
+        .method h2 span {
             background: #2563EB;
-        }
-
-        .copy-btn.copied {
-            background: #10B981;
-        }
-
-        .description {
-            font-size: 13px;
-            color: #94A3B8;
-            margin-bottom: 12px;
-            line-height: 1.6;
-        }
-
-        .button-group {
-            display: flex;
-            gap: 10px;
-            margin-top: 16px;
-        }
-
-        .btn {
-            flex: 1;
-            padding: 10px 16px;
-            border: none;
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            text-align: center;
-            text-decoration: none;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
             display: inline-flex;
             align-items: center;
             justify-content: center;
+            margin-right: 12px;
+            font-size: 0.8em;
         }
-
-        .btn-primary {
-            background: #2563EB;
-            color: white;
+        .method p {
+            line-height: 1.8;
+            margin-bottom: 15px;
+            color: #475569;
         }
-
-        .btn-primary:hover {
-            background: #1D4ED8;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
-        }
-
-        .btn-secondary {
-            background: rgba(37, 99, 235, 0.1);
-            color: #60A5FA;
-            border: 1px solid rgba(37, 99, 235, 0.3);
-        }
-
-        .btn-secondary:hover {
-            background: rgba(37, 99, 235, 0.2);
-        }
-
-        .steps {
-            background: rgba(15, 23, 42, 0.8);
-            border: 1px solid rgba(148, 163, 184, 0.2);
-            border-radius: 12px;
-            padding: 24px;
-            margin-bottom: 30px;
-        }
-
-        .steps h3 {
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 16px;
-            color: #60A5FA;
-        }
-
-        .step {
-            margin-bottom: 20px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid rgba(148, 163, 184, 0.1);
-        }
-
-        .step:last-child {
-            border-bottom: none;
-            margin-bottom: 0;
-            padding-bottom: 0;
-        }
-
-        .step-number {
-            display: inline-block;
-            width: 28px;
-            height: 28px;
-            background: #2563EB;
-            color: white;
-            border-radius: 50%;
-            text-align: center;
-            line-height: 28px;
-            font-weight: 600;
-            margin-right: 10px;
-            font-size: 12px;
-        }
-
-        .step-title {
-            font-weight: 600;
-            color: #E2E8F0;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-        }
-
-        .step-content {
-            margin-left: 38px;
-            color: #94A3B8;
-            font-size: 13px;
-            line-height: 1.6;
-        }
-
-        .info-box {
-            background: rgba(59, 130, 246, 0.1);
-            border-left: 3px solid #3B82F6;
-            padding: 12px;
-            border-radius: 6px;
-            margin-top: 12px;
-            font-size: 12px;
-            color: #93C5FD;
-        }
-
-        .warning-box {
-            background: rgba(245, 158, 11, 0.1);
-            border-left: 3px solid #F59E0B;
-            padding: 12px;
-            border-radius: 6px;
-            margin-top: 12px;
-            font-size: 12px;
-            color: #FCD34D;
-        }
-
-        .success-message {
-            background: rgba(16, 185, 129, 0.1);
-            border: 1px solid rgba(16, 185, 129, 0.3);
+        .command-box {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 20px;
             border-radius: 8px;
-            padding: 16px;
-            margin-top: 20px;
-            color: #6EE7B7;
-            display: none;
-            text-align: center;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.95em;
+            overflow-x: auto;
+            position: relative;
+            margin: 15px 0;
         }
-
-        .success-message.show {
+        .command-box code {
             display: block;
-            animation: slideIn 0.3s ease;
+            white-space: pre-wrap;
+            word-break: break-all;
         }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: all 0.3s;
         }
-
-        .feature-list {
-            list-style: none;
-            margin-top: 12px;
+        .copy-btn:hover {
+            background: #059669;
+            transform: translateY(-2px);
         }
-
-        .feature-list li {
-            padding: 6px 0;
-            color: #94A3B8;
-            font-size: 13px;
-            display: flex;
-            align-items: center;
+        .copy-btn:active {
+            transform: translateY(0);
         }
-
-        .feature-list li:before {
-            content: "✓";
-            color: #10B981;
-            font-weight: bold;
-            margin-right: 8px;
+        .copy-btn.copied {
+            background: #6366f1;
         }
-
-        @media (max-width: 768px) {
-            .methods {
-                grid-template-columns: 1fr;
-            }
-
-            .header h1 {
-                font-size: 22px;
-            }
-
-            .button-group {
-                flex-direction: column;
-            }
+        .input-group {
+            margin: 20px 0;
+        }
+        .input-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #334155;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+        .input-group input:focus {
+            outline: none;
+            border-color: #2563EB;
+        }
+        .generate-btn {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+        .generate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+        }
+        .generate-btn:active {
+            transform: translateY(0);
+        }
+        .alert {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .alert strong {
+            color: #92400e;
+        }
+        .footer {
+            background: #f8fafc;
+            padding: 20px 30px;
+            text-align: center;
+            color: #64748b;
+            border-top: 1px solid #e2e8f0;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- Header -->
         <div class="header">
-            <div class="lightning-icon">⚡</div>
-            <h1>Cài đặt Windows Agent 1-Click</h1>
-            <p>Chọn 1 trong 2 cách cực kỳ đơn giản dưới đây để kết nối máy tính Windows vào Dashboard:</p>
+            <h1>🖥️ Windows Agent Installer</h1>
+            <p>Hướng dẫn cài đặt Agent thu thập thông tin tài sản Windows</p>
         </div>
 
-        <!-- Installation Methods -->
-        <div class="methods">
-            <!-- Method 1: PowerShell -->
-            <div class="method-card">
-                <h3><span>🔌</span>Cách 1: Chạy 1 dòng lệnh PowerShell</h3>
-                <p class="description">Mở PowerShell (Run as Administrator) trên máy Windows và chạy lệnh dưới đây. Cực nhanh, chỉ cần 30 giây!</p>
-                
-                <div class="code-block">
-                    <code>powershell -NoProfile -ExecutionPolicy Bypass -Command "Invoke-WebRequest 'http://192.168.1.246:3000/install.bat' -OutFile $env:TEMP\install.bat; & $env:TEMP\install.bat"</code>
-                    <button class="copy-btn" onclick="copyToClipboard(this, 0)">COPY</button>
-                </div>
-
-                <div class="button-group">
-                    <button class="btn btn-primary" onclick="showInstallSteps(1)">Hướng dẫn chi tiết</button>
-                </div>
-
-                <ul class="feature-list">
-                    <li>Tự động tải file cài đặt</li>
-                    <li>Chạy với quyền Administrator</li>
-                    <li>Hoàn thành trong 30 giây</li>
-                </ul>
+        <div class="content">
+            <div class="input-group">
+                <label for="serverUrl">🌐 Địa chỉ Server (IP hoặc Domain):</label>
+                <input type="text" id="serverUrl" placeholder="http://192.168.1.246:3000" value="http://192.168.1.246:3000">
             </div>
 
-            <!-- Method 2: BAT File -->
-            <div class="method-card">
-                <h3><span>📥</span>Cách 2: Tải file .BAT và chạy</h3>
-                <p class="description">Tải file cài đặt install.bat về máy, sau đó double-click để chạy. Tương thích 100% với Windows!</p>
-                
-                <div class="code-block">
-                    <code>install.bat (100% tự động)</code>
-                    <button class="copy-btn" onclick="downloadFile()">DOWNLOAD</button>
-                </div>
+            <button class="generate-btn" onclick="generateCommands()">🚀 Tạo Lệnh Cài Đặt</button>
 
-                <div class="button-group">
-                    <a href="/install.bat" class="btn btn-primary">📥 Tải File install.bat</a>
-                    <button class="btn btn-secondary" onclick="showInstallSteps(2)">Hướng dẫn</button>
-                </div>
-
-                <ul class="feature-list">
-                    <li>Double-click để chạy</li>
-                    <li>Không cần terminal/PowerShell</li>
-                    <li>Dễ dàng chia sẻ với người khác</li>
-                </ul>
-            </div>
-        </div>
-
-        <!-- Installation Steps -->
-        <div class="steps">
-            <h3>📋 Hướng dẫn chi tiết (Cách 1: PowerShell)</h3>
-            
-            <div class="step">
-                <div class="step-title">
-                    <span class="step-number">1</span>
-                    Mở PowerShell với quyền Administrator
-                </div>
-                <div class="step-content">
-                    <p>• Nhấn <strong>Win + R</strong></p>
-                    <p>• Gõ: <strong>powershell</strong></p>
-                    <p>• Nhấn <strong>Ctrl + Shift + Enter</strong></p>
-                    <div class="info-box">💡 Lưu ý: Chỉ chạy với quyền Administrator thì mới hoạt động!</div>
+            <div class="method">
+                <h2><span>1</span> PowerShell 1-Line (Khuyên dùng - Nhanh nhất)</h2>
+                <p>Chạy trực tiếp script trong bộ nhớ, không tạo file tạm. An toàn với Antivirus.</p>
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyCommand('cmd1')">📋 Copy</button>
+                    <code id="cmd1">powershell -NoProfile -ExecutionPolicy Bypass -Command "iwr -useb 'http://192.168.1.246:3000/agent.ps1' | iex"</code>
                 </div>
             </div>
 
-            <div class="step">
-                <div class="step-title">
-                    <span class="step-number">2</span>
-                    Copy & Paste lệnh PowerShell
-                </div>
-                <div class="step-content">
-                    <p>• Click nút "COPY" ở trên để copy lệnh</p>
-                    <p>• Click chuột phải trong PowerShell, chọn "Paste"</p>
-                    <p>• Hoặc dùng <strong>Ctrl + V</strong> để paste</p>
+            <div class="method">
+                <h2><span>2</span> Cài đặt qua install.bat (Tự động)</h2>
+                <p>Tải và chạy file batch cài đặt tự động. Hỗ trợ truyền tham số Server URL.</p>
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyCommand('cmd2')">📋 Copy</button>
+                    <code id="cmd2">powershell -NoProfile -ExecutionPolicy Bypass -Command "$url='http://192.168.1.246:3000'; iwr \"$url/install.bat\" -OutFile $env:TEMP\install.bat; & $env:TEMP\install.bat $url"</code>
                 </div>
             </div>
 
-            <div class="step">
-                <div class="step-title">
-                    <span class="step-number">3</span>
-                    Nhấn Enter & Chờ cài đặt hoàn thành
-                </div>
-                <div class="step-content">
-                    <p>• Nhấn <strong>Enter</strong> để chạy lệnh</p>
-                    <p>• PowerShell sẽ tự động tải file cài đặt</p>
-                    <p>• Quá trình cài đặt kéo dài ~30 giây</p>
-                    <p>• Khi hoàn thành, bạn sẽ thấy thông báo: "HOÀN TẤT CÀI ĐẶT!"</p>
-                    <div class="info-box">✓ Máy tính của bạn đã được kết nối vào Dashboard!</div>
-                </div>
+            <div class="method">
+                <h2><span>3</span> Tải bộ cài EXE (Đề xuất cho End-user)</h2>
+                <p>Tải file <strong>WindowsAgentInstaller.exe</strong> và nhấp đúp chuột để cài đặt tự động. Phù hợp cho người dùng phổ thông.</p>
+                <p style="margin-top: 15px;">
+                    <a href="/WindowsAgentInstaller.exe" download style="background: linear-gradient(135deg, #2563EB 0%, #1e40af 100%); color: white; text-decoration: none; padding: 12px 24px; border-radius: 8px; display: inline-block; font-weight: 600; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3); transition: all 0.3s;">
+                        💾 Tải WindowsAgentInstaller.exe (106 KB)
+                    </a>
+                </p>
             </div>
 
-            <div class="step">
-                <div class="step-title">
-                    <span class="step-number">4</span>
-                    Kiểm tra kết nối
+            <div class="method">
+                <h2><span>4</span> Tải Agent thủ công (PowerShell Script)</h2>
+                <p>Tải file agent.ps1 về máy và chạy thủ công với tham số Server URL.</p>
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyCommand('cmd3')">📋 Copy</button>
+                    <code id="cmd3">powershell -NoProfile -ExecutionPolicy Bypass -File "C:\WindowsAgent\agent.ps1" -ServerUrl "http://192.168.1.246:3000"</code>
                 </div>
-                <div class="step-content">
-                    <p>• Truy cập Dashboard: <strong>http://192.168.1.246:3000</strong></p>
-                    <p>• Kiểm tra tab "TỔNG QUAN" → Bạn sẽ thấy máy tính mới trong danh sách</p>
-                    <p>• Status: <strong>✅ Online</strong> = Kết nối thành công!</p>
-                </div>
+                <p style="margin-top: 15px;">
+                    <a href="/agent.ps1" download style="color: #2563EB; text-decoration: none; font-weight: 600;">
+                        ⬇️ Tải agent.ps1
+                    </a>
+                </p>
+            </div>
+
+            <div class="alert">
+                <strong>⚠️ Lưu ý:</strong> Cần chạy PowerShell với quyền <strong>Administrator</strong> để cài đặt Scheduled Task tự động.
             </div>
         </div>
 
-        <!-- What Gets Installed -->
-        <div class="steps">
-            <h3>🔧 Những gì được cài đặt?</h3>
-            
-            <div class="step">
-                <div class="step-content">
-                    <p><strong>📁 Thư mục:</strong> C:\WindowsAgent\</p>
-                    <p><strong>📜 Script:</strong> agent.ps1 (theo dõi máy tính)</p>
-                    <p><strong>⏰ Lịch trình:</strong> Scheduled Task chạy mỗi 5 phút tự động</p>
-                    <p><strong>🌐 Kết nối:</strong> Dashboard tại http://192.168.1.246:3000</p>
-                    <p><strong>📊 Giám sát:</strong> CPU, RAM, Disk, Processes, Services, etc.</p>
-                    <div class="info-box">
-                        💾 Dung lượng sử dụng: &lt; 50MB
-                        <br>
-                        ⚙️ Không ảnh hưởng hiệu suất hệ thống
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Troubleshooting -->
-        <div class="steps">
-            <h3>❓ Gặp lỗi? Đây là những giải pháp:</h3>
-            
-            <div class="step">
-                <div class="step-title">Lỗi: "Scripts is disabled"</div>
-                <div class="step-content">
-                    <p>Chạy lệnh này trong PowerShell (Admin):</p>
-                    <div class="code-block">
-                        <code>Set-ExecutionPolicy RemoteSigned -Scope CurrentUser</code>
-                        <button class="copy-btn" onclick="copyToClipboard(this, 1)">COPY</button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="step">
-                <div class="step-title">Lỗi: "Không thể kết nối tới server"</div>
-                <div class="step-content">
-                    <p>• Kiểm tra kết nối mạng đến: <strong>192.168.1.246:3000</strong></p>
-                    <p>• Chạy: <code>ping 192.168.1.246</code> để kiểm tra</p>
-                    <p>• Nếu firewall chặn, thêm quy tắc cho port 3000</p>
-                </div>
-            </div>
-
-            <div class="step">
-                <div class="step-title">Lỗi: "Permission Denied"</div>
-                <div class="step-content">
-                    <p>• Bạn phải chạy PowerShell với quyền <strong>Administrator</strong></p>
-                    <p>• Click chuột phải vào PowerShell → "Run as administrator"</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Success Message -->
-        <div class="success-message" id="successMessage">
-            ✓ Lệnh đã được copy! Hãy paste vào PowerShell bằng Ctrl+V
-        </div>
-
-        <!-- Footer -->
-        <div style="text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid rgba(148, 163, 184, 0.1);">
-            <p style="color: #64748B; font-size: 12px;">
-                Cần hỗ trợ? Liên hệ: <strong>support@company.com</strong> | Dashboard: <strong>http://192.168.1.246:3000</strong>
-            </p>
+        <div class="footer">
+            <p>© 2026 Windows Agent Dashboard | Version 2.0 Dynamic</p>
         </div>
     </div>
 
     <script>
-        function copyToClipboard(btn, codeIndex) {
-            const codeBlocks = document.querySelectorAll('.code-block code');
-            const text = codeBlocks[codeIndex].innerText;
+        function generateCommands() {
+            const serverUrl = document.getElementById('serverUrl').value.trim() || 'http://192.168.1.246:3000';
+            
+            document.getElementById('cmd1').textContent = 
+                `powershell -NoProfile -ExecutionPolicy Bypass -Command "iwr -useb '${serverUrl}/agent.ps1' | iex"`;
+            
+            document.getElementById('cmd2').textContent = 
+                `powershell -NoProfile -ExecutionPolicy Bypass -Command "$url='${serverUrl}'; iwr \\\"$url/install.bat\\\" -OutFile $env:TEMP\\install.bat; & $env:TEMP\\install.bat $url"`;
+            
+            document.getElementById('cmd3').textContent = 
+                `powershell -NoProfile -ExecutionPolicy Bypass -File "C:\\WindowsAgent\\agent.ps1" -ServerUrl "${serverUrl}"`;
+        }
 
-            // Fallback cho HTTP (không dùng được navigator.clipboard)
-            const textarea = document.createElement('textarea');
-            textarea.value = text;
-            textarea.style.position = 'fixed';
-            textarea.style.left = '-9999px';
-            document.body.appendChild(textarea);
-            textarea.select();
-            try {
-                document.execCommand('copy');
-                const successMsg = document.getElementById('successMessage');
-                successMsg.classList.add('show');
-                setTimeout(() => successMsg.classList.remove('show'), 2000);
-                const originalText = btn.innerText;
-                btn.innerText = '✓ COPIED';
+        function copyCommand(elementId) {
+            const codeElement = document.getElementById(elementId);
+            const text = codeElement.textContent;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = codeElement.previousElementSibling;
+                const originalText = btn.textContent;
+                btn.textContent = '✅ Đã copy!';
                 btn.classList.add('copied');
+                
                 setTimeout(() => {
-                    btn.innerText = originalText;
+                    btn.textContent = originalText;
                     btn.classList.remove('copied');
                 }, 2000);
-            } catch (err) {
-                alert('Copy thất bại. Hãy bôi đen lệnh và nhấn Ctrl+C');
-            }
-            document.body.removeChild(textarea);
+            });
         }
 
-        function downloadFile() {
-            const link = document.createElement('a');
-            link.href = '/install.bat';
-            link.download = 'install.bat';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-
-        function showInstallSteps(method) {
-            alert(method === 1 
-                ? 'Xem hướng dẫn chi tiết ở bên dưới!' 
-                : 'Tải file install.bat, double-click để chạy (tự động hoàn thành!)');
-        }
+        // Initialize on load
+        window.onload = generateCommands;
     </script>
 </body>
 </html>
