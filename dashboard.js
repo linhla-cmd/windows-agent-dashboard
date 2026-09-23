@@ -1157,6 +1157,33 @@ app.get('/api/it-devices', userAuth.verifySessionMiddleware, (req, res) => {
   }
 });
 
+app.get('/api/it-devices/:id/qr', userAuth.verifySessionMiddleware, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const device = db.getItDeviceById(id);
+    if (!device) {
+      return res.status(404).json({ error: 'Không tìm thấy thiết bị IT' });
+    }
+
+    const qrPayload = `IT-${device.id}-${device.device_name || ''}-${device.asset_code || ''}`;
+    const qrDataUrl = await QRCode.toDataURL(qrPayload, {
+      width: 300,
+      margin: 2,
+      errorCorrectionLevel: 'M'
+    });
+
+    res.json({
+      success: true,
+      qrDataUrl: qrDataUrl,
+      qrPayload: qrPayload,
+      deviceInfo: device
+    });
+  } catch (err) {
+    console.error('Error generating IT device QR:', err);
+    res.status(500).json({ error: 'Lỗi server khi tạo mã QR', message: err.message });
+  }
+});
+
 app.get('/api/it-devices/:id', userAuth.verifySessionMiddleware, (req, res) => {
   try {
     const { id } = req.params;

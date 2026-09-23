@@ -428,6 +428,60 @@
       gap: 6px;
     }
 
+    .btn-icon {
+      background: rgba(2, 132, 199, 0.15);
+      color: var(--accent2);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      padding: 6px 10px;
+      border-radius: 2px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s;
+      position: relative;
+    }
+
+    .btn-icon:hover {
+      background: var(--accent2);
+      color: #000;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(56, 189, 248, 0.3);
+    }
+
+    .btn-icon[title]:hover::after {
+      content: attr(title);
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--card);
+      color: var(--fg);
+      padding: 4px 8px;
+      border-radius: 2px;
+      font-size: 10px;
+      white-space: nowrap;
+      margin-bottom: 4px;
+      border: 1px solid var(--border);
+      z-index: 10;
+      pointer-events: none;
+    }
+
+    .btn-danger-icon {
+      background: rgba(239, 68, 68, 0.15) !important;
+      color: var(--danger-glow) !important;
+      border-color: rgba(239, 68, 68, 0.3) !important;
+    }
+
+    .btn-danger-icon:hover {
+      background: var(--danger-glow) !important;
+      color: #fff !important;
+      box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3) !important;
+    }
+
+    .actions {
+      display: flex;
+      gap: 6px;
+    }
+
     .btn-edit {
       background: rgba(2, 132, 199, 0.15);
       color: var(--accent2);
@@ -460,6 +514,196 @@
     .btn-delete:hover {
       background: var(--danger-glow);
       color: #fff;
+    }
+
+    /* ── CONFIRM MODAL ── */
+    .confirm-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(4, 10, 20, 0.85);
+      backdrop-filter: blur(8px);
+      z-index: 1100;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .confirm-modal.active {
+      display: flex;
+    }
+
+    .confirm-content {
+      background: var(--card);
+      border: 1px solid var(--border-light);
+      border-radius: 4px;
+      padding: 30px;
+      max-width: 500px;
+      width: 90%;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 30px rgba(239, 68, 68, 0.2);
+      position: relative;
+    }
+
+    .confirm-content::before {
+      content: '';
+      position: absolute;
+      top: -1px;
+      left: -1px;
+      right: -1px;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--danger-glow), transparent);
+    }
+
+    .confirm-header {
+      font-size: 16px;
+      font-weight: 800;
+      margin-bottom: 15px;
+      color: var(--danger-glow);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      font-family: var(--font-mono);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .confirm-body {
+      font-size: 13px;
+      color: var(--fg2);
+      margin-bottom: 25px;
+      line-height: 1.6;
+    }
+
+    .confirm-footer {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+
+    /* ── QR MODAL ── */
+    .qr-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(4, 10, 20, 0.85);
+      backdrop-filter: blur(8px);
+      z-index: 1100;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .qr-modal.active {
+      display: flex;
+    }
+
+    .qr-content {
+      background: var(--card);
+      border: 1px solid var(--border-light);
+      border-radius: 4px;
+      padding: 30px;
+      max-width: 700px;
+      width: 90%;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 30px rgba(56, 189, 248, 0.1);
+      position: relative;
+    }
+
+    .qr-content::before {
+      content: '';
+      position: absolute;
+      top: -1px;
+      left: -1px;
+      right: -1px;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--accent2), transparent);
+    }
+
+    .qr-header {
+      font-size: 16px;
+      font-weight: 800;
+      margin-bottom: 20px;
+      color: var(--accent2);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      font-family: var(--font-mono);
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 12px;
+    }
+
+    .qr-body {
+      display: flex;
+      gap: 30px;
+      align-items: flex-start;
+    }
+
+    .qr-code-section {
+      flex-shrink: 0;
+    }
+
+    .qr-code-section img {
+      width: 250px;
+      height: 250px;
+      border: 2px solid var(--border);
+      border-radius: 4px;
+      padding: 10px;
+      background: white;
+    }
+
+    .qr-info-section {
+      flex: 1;
+    }
+
+    .qr-info-item {
+      margin-bottom: 12px;
+      font-size: 12px;
+    }
+
+    .qr-info-item label {
+      display: block;
+      font-size: 10px;
+      color: var(--fg3);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+    }
+
+    .qr-info-item span {
+      color: var(--fg);
+      font-weight: 600;
+      font-family: var(--font-mono);
+    }
+
+    .qr-footer {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-top: 25px;
+      padding-top: 15px;
+      border-top: 1px solid var(--border);
+    }
+
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      .qr-modal.active,
+      .qr-modal.active * {
+        visibility: visible;
+      }
+      .qr-modal.active {
+        position: absolute;
+        left: 0;
+        top: 0;
+        background: white;
+      }
+      .qr-footer {
+        display: none !important;
+      }
     }
 
     .empty-state {
@@ -888,7 +1132,7 @@
     </main>
   </div>
 
-  <!-- Modal Form -->
+    <!-- Modal Form -->
   <div class="modal" id="deviceModal">
     <div class="modal-content">
       <div class="modal-header" id="modalTitle">Thêm thiết bị IT</div>
@@ -985,7 +1229,7 @@
           <button type="button" class="modal-footer btn-cancel" onclick="closeModal()">
             Hủy
           </button>
-          <button type="submit" class="modal-footer btn-submit">
+          <button type="submit" class="modal-footer btn-submit" id="submitBtn">
             Lưu
           </button>
         </div>
@@ -993,9 +1237,70 @@
     </div>
   </div>
 
+  <!-- Confirm Delete Modal -->
+  <div class="confirm-modal" id="deleteConfirmModal">
+    <div class="confirm-content">
+      <div class="confirm-header">
+        <span>⚠️ Xác nhận xóa</span>
+      </div>
+      <div class="confirm-body" id="deleteConfirmMessage">
+        Bạn có chắc chắn muốn xóa thiết bị này không? Hành động này không thể hoàn tác.
+      </div>
+      <div class="confirm-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()">Hủy</button>
+        <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Xác nhận xóa</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- QR Code Modal -->
+  <div class="qr-modal" id="qrModal">
+    <div class="qr-content">
+      <div class="qr-header" id="qrModalTitle">Mã QR Thiết bị</div>
+      <div class="qr-body">
+        <div class="qr-code-section">
+          <img id="qrImage" src="" alt="Mã QR" />
+        </div>
+        <div class="qr-info-section">
+          <div class="qr-info-item">
+            <label>Mã tài sản (Asset Code)</label>
+            <span id="qrAssetCode">-</span>
+          </div>
+          <div class="qr-info-item">
+            <label>Số Serial</label>
+            <span id="qrSerialNumber">-</span>
+          </div>
+          <div class="qr-info-item">
+            <label>Model</label>
+            <span id="qrModel">-</span>
+          </div>
+          <div class="qr-info-item">
+            <label>Vị trí đặt</label>
+            <span id="qrLocation">-</span>
+          </div>
+          <div class="qr-info-item">
+            <label>Người sử dụng / Phòng ban</label>
+            <span id="qrUserDept">-</span>
+          </div>
+          <div class="qr-info-item">
+            <label>Payload QR</label>
+            <span id="qrPayloadText" style="word-break: break-all; font-size: 11px; opacity: 0.8;">-</span>
+          </div>
+        </div>
+      </div>
+      <div class="qr-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeQrModal()">Đóng</button>
+        <button type="button" class="btn btn-secondary" id="downloadQrBtn">💾 Tải QR</button>
+        <button type="button" class="btn btn-primary" onclick="printQR()">🖨️ In QR</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     let currentDevices = [];
     let editingId = null;
+    let deletingId = null;
+    let currentQrData = null;
 
     // Initialize
     document.addEventListener('DOMContentLoaded', () => {
@@ -1046,6 +1351,7 @@
         const data = await response.json();
         const departments = [...new Set((data.devices || []).map(d => d.department).filter(Boolean))];
         const select = document.getElementById('filterDepartment');
+        select.innerHTML = '<option value="">Tất cả</option>';
         departments.forEach(dept => {
           const option = document.createElement('option');
           option.value = dept;
@@ -1069,23 +1375,39 @@
         .map(
           device => `
         <tr>
-          <td>${device.device_name}</td>
-          <td>${device.device_type}</td>
-          <td>${device.asset_code || '-'}</td>
-          <td>${device.serial_number || '-'}</td>
-          <td>${device.user_name || '-'}</td>
-          <td>${device.department || '-'}</td>
+          <td><strong>${escapeHtml(device.device_name)}</strong></td>
+          <td>${escapeHtml(device.device_type || '-')}</td>
+          <td>${escapeHtml(device.asset_code || '-')}</td>
+          <td>${escapeHtml(device.serial_number || '-')}</td>
+          <td>${escapeHtml(device.user_name || '-')}</td>
+          <td>${escapeHtml(device.department || '-')}</td>
           <td>${getStatusBadge(device.status)}</td>
           <td>
             <div class="actions">
-              <button class="btn-edit" onclick="editDevice(${device.id})">✏️ Sửa</button>
-              <button class="btn-delete" onclick="deleteDevice(${device.id})">🗑️ Xóa</button>
+              <button class="btn-icon" title="Sửa" onclick="editDevice(${device.id})">📝</button>
+              <button class="btn-icon" title="QR Code" onclick="showQRCode(${device.id})">🔲</button>
+              <button class="btn-icon btn-danger-icon" title="Xóa" onclick="confirmDeleteDevice(${device.id}, '${escapeQuote(device.device_name)}')">🗑️</button>
             </div>
           </td>
         </tr>
       `
         )
         .join('');
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function escapeQuote(str) {
+      if (!str) return '';
+      return String(str).replace(/'/g, "\\'").replace(/"/g, '&quot;');
     }
 
     function getStatusBadge(status) {
@@ -1097,12 +1419,13 @@
         'Đã thanh lý': 'status-retired'
       };
       const cssClass = statusMap[status] || 'status-active';
-      return `<span class="status-badge ${cssClass}">${status}</span>`;
+      return `<span class="status-badge ${cssClass}">${status || 'Đang sử dụng'}</span>`;
     }
 
     function openAddModal() {
       editingId = null;
       document.getElementById('modalTitle').textContent = 'Thêm thiết bị IT';
+      document.getElementById('submitBtn').textContent = 'Lưu';
       document.getElementById('deviceId').value = '';
       document.getElementById('deviceName').value = '';
       document.getElementById('deviceType').value = '';
@@ -1123,15 +1446,16 @@
     async function editDevice(id) {
       try {
         const response = await fetch(`/api/it-devices/${id}`);
-        if (!response.ok) throw new Error('Failed to load device');
+        if (!response.ok) throw new Error('Không thể tải thông tin thiết bị');
         const data = await response.json();
         const device = data.device;
 
         editingId = id;
         document.getElementById('modalTitle').textContent = 'Chỉnh sửa thiết bị IT';
+        document.getElementById('submitBtn').textContent = 'Cập nhật';
         document.getElementById('deviceId').value = device.id;
-        document.getElementById('deviceName').value = device.device_name;
-        document.getElementById('deviceType').value = device.device_type;
+        document.getElementById('deviceName').value = device.device_name || '';
+        document.getElementById('deviceType').value = device.device_type || '';
         document.getElementById('assetCode').value = device.asset_code || '';
         document.getElementById('serialNumber').value = device.serial_number || '';
         document.getElementById('manufacturer').value = device.manufacturer || '';
@@ -1145,12 +1469,12 @@
         document.getElementById('warrantyExpire').value = device.warranty_expire
           ? new Date(device.warranty_expire).toISOString().split('T')[0]
           : '';
-        document.getElementById('status').value = device.status;
+        document.getElementById('status').value = device.status || 'Đang sử dụng';
         document.getElementById('notes').value = device.notes || '';
         document.getElementById('deviceModal').classList.add('active');
       } catch (error) {
         console.error('Error loading device:', error);
-        showToast('Lỗi khi tải dữ liệu thiết bị', 'error');
+        showToast('Lỗi khi tải dữ liệu thiết bị: ' + error.message, 'error');
       }
     }
 
@@ -1162,17 +1486,28 @@
     async function submitDevice(event) {
       event.preventDefault();
 
-      const deviceId = document.getElementById('deviceId').value;
+      const deviceName = document.getElementById('deviceName').value.trim();
+      const deviceType = document.getElementById('deviceType').value;
+
+      if (!deviceName) {
+        showToast('Vui lòng nhập tên thiết bị', 'error');
+        return;
+      }
+      if (!deviceType) {
+        showToast('Vui lòng chọn loại thiết bị', 'error');
+        return;
+      }
+
       const payload = {
-        device_name: document.getElementById('deviceName').value,
-        device_type: document.getElementById('deviceType').value,
-        asset_code: document.getElementById('assetCode').value || null,
-        serial_number: document.getElementById('serialNumber').value || null,
-        manufacturer: document.getElementById('manufacturer').value || null,
-        model: document.getElementById('model').value || null,
-        user_name: document.getElementById('userName').value || null,
-        department: document.getElementById('department').value || null,
-        location: document.getElementById('location').value || null,
+        device_name: deviceName,
+        device_type: deviceType,
+        asset_code: document.getElementById('assetCode').value.trim() || null,
+        serial_number: document.getElementById('serialNumber').value.trim() || null,
+        manufacturer: document.getElementById('manufacturer').value.trim() || null,
+        model: document.getElementById('model').value.trim() || null,
+        user_name: document.getElementById('userName').value.trim() || null,
+        department: document.getElementById('department').value.trim() || null,
+        location: document.getElementById('location').value.trim() || null,
         purchase_date: document.getElementById('purchaseDate').value
           ? new Date(document.getElementById('purchaseDate').value).getTime()
           : null,
@@ -1180,7 +1515,7 @@
           ? new Date(document.getElementById('warrantyExpire').value).getTime()
           : null,
         status: document.getElementById('status').value,
-        notes: document.getElementById('notes').value || null
+        notes: document.getElementById('notes').value.trim() || null
       };
 
       try {
@@ -1199,35 +1534,107 @@
           });
         }
 
+        const data = await response.json();
         if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.error || 'Failed to save device');
+          throw new Error(data.error || 'Lỗi khi lưu thiết bị');
         }
 
-        showToast(editingId ? 'Cập nhật thiết bị thành công' : 'Thêm thiết bị thành công', 'success');
+        showToast(editingId ? 'Cập nhật thành công' : 'Thêm thiết bị thành công', 'success');
         closeModal();
         loadDevices();
         loadStats();
+        loadDepartments();
       } catch (error) {
         console.error('Error saving device:', error);
         showToast('Lỗi: ' + error.message, 'error');
       }
     }
 
-    async function deleteDevice(id) {
-      if (!confirm('Bạn có chắc muốn xóa thiết bị này?')) return;
+    // --- Delete Flow with Confirm Modal ---
+    function confirmDeleteDevice(id, name) {
+      deletingId = id;
+      document.getElementById('deleteConfirmMessage').innerHTML = 
+        `Bạn có chắc chắn muốn xóa thiết bị <strong>${escapeHtml(name)}</strong>?<br><span style="font-size: 11px; color: var(--fg3);">Hành động này không thể hoàn tác.</span>`;
+      
+      const confirmBtn = document.getElementById('confirmDeleteBtn');
+      confirmBtn.onclick = () => executeDeleteDevice(id);
 
+      document.getElementById('deleteConfirmModal').classList.add('active');
+    }
+
+    function closeDeleteModal() {
+      document.getElementById('deleteConfirmModal').classList.remove('active');
+      deletingId = null;
+    }
+
+    async function executeDeleteDevice(id) {
       try {
         const response = await fetch(`/api/it-devices/${id}`, { method: 'DELETE' });
-        if (!response.ok) throw new Error('Failed to delete device');
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Lỗi khi xóa thiết bị');
 
         showToast('Xóa thiết bị thành công', 'success');
+        closeDeleteModal();
         loadDevices();
         loadStats();
+        loadDepartments();
       } catch (error) {
         console.error('Error deleting device:', error);
-        showToast('Lỗi khi xóa thiết bị', 'error');
+        showToast('Lỗi khi xóa thiết bị: ' + error.message, 'error');
       }
+    }
+
+    // --- QR Code Flow ---
+    async function showQRCode(id) {
+      try {
+        const response = await fetch(`/api/it-devices/${id}/qr`);
+        if (!response.ok) {
+          const errData = await response.json();
+          throw new Error(errData.error || 'Không thể tạo mã QR');
+        }
+
+        const data = await response.json();
+        currentQrData = data;
+
+        const info = data.deviceInfo || {};
+        document.getElementById('qrModalTitle').textContent = `Mã QR - ${info.device_name || 'Thiết bị IT'}`;
+        document.getElementById('qrImage').src = data.qrDataUrl;
+        document.getElementById('qrAssetCode').textContent = info.asset_code || 'Chưa gán mã';
+        document.getElementById('qrSerialNumber').textContent = info.serial_number || 'N/A';
+        document.getElementById('qrModel').textContent = [info.manufacturer, info.model].filter(Boolean).join(' ') || 'N/A';
+        document.getElementById('qrLocation').textContent = info.location || 'N/A';
+        document.getElementById('qrUserDept').textContent = [info.user_name, info.department].filter(Boolean).join(' - ') || 'Chưa phân bổ';
+        document.getElementById('qrPayloadText').textContent = data.qrPayload || '-';
+
+        const downloadBtn = document.getElementById('downloadQrBtn');
+        const filename = `QR_${info.asset_code || ('IT_' + info.id)}.png`;
+        downloadBtn.onclick = () => downloadQR(data.qrDataUrl, filename);
+
+        document.getElementById('qrModal').classList.add('active');
+      } catch (error) {
+        console.error('Error fetching QR code:', error);
+        showToast('Lỗi: ' + error.message, 'error');
+      }
+    }
+
+    function closeQrModal() {
+      document.getElementById('qrModal').classList.remove('active');
+      currentQrData = null;
+    }
+
+    function downloadQR(dataUrl, filename = 'it-device-qr.png') {
+      if (!dataUrl) return;
+      const a = document.createElement('a');
+      a.href = dataUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      showToast('Đã tải xuống mã QR', 'success');
+    }
+
+    function printQR() {
+      window.print();
     }
 
     function applyFilters() {
@@ -1274,12 +1681,24 @@
       setTimeout(() => toast.remove(), 3000);
     }
 
-    // Keyboard shortcuts
+    // Keyboard shortcuts & click outside to close
     document.addEventListener('keydown', event => {
-      if (event.key === 'Escape' && document.getElementById('deviceModal').classList.contains('active')) {
-        closeModal();
+      if (event.key === 'Escape') {
+        if (document.getElementById('deviceModal').classList.contains('active')) closeModal();
+        if (document.getElementById('deleteConfirmModal').classList.contains('active')) closeDeleteModal();
+        if (document.getElementById('qrModal').classList.contains('active')) closeQrModal();
       }
     });
+
+    window.onclick = function(event) {
+      const deviceModal = document.getElementById('deviceModal');
+      const deleteModal = document.getElementById('deleteConfirmModal');
+      const qrModal = document.getElementById('qrModal');
+
+      if (event.target === deviceModal) closeModal();
+      if (event.target === deleteModal) closeDeleteModal();
+      if (event.target === qrModal) closeQrModal();
+    };
   </script>
 </body>
 </html>
