@@ -1135,6 +1135,100 @@ app.delete('/api/audit/tickets/:ticketId', (req, res) => {
   }
 });
 
+// IT Devices API Endpoints
+app.get('/api/it-devices/stats', userAuth.verifySessionMiddleware, (req, res) => {
+  try {
+    const stats = db.getItDeviceStats();
+    res.json({ success: true, ...stats });
+  } catch (err) {
+    console.error('Error fetching IT device stats:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/it-devices', userAuth.verifySessionMiddleware, (req, res) => {
+  try {
+    const { type, status, department, search } = req.query;
+    const devices = db.getAllItDevices({ type, status, department, search });
+    res.json({ success: true, devices });
+  } catch (err) {
+    console.error('Error fetching IT devices:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/it-devices/:id', userAuth.verifySessionMiddleware, (req, res) => {
+  try {
+    const { id } = req.params;
+    const device = db.getItDeviceById(id);
+    if (!device) {
+      return res.status(404).json({ error: 'Không tìm thấy thiết bị IT' });
+    }
+    res.json({ success: true, device });
+  } catch (err) {
+    console.error('Error fetching IT device by ID:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/it-devices', userAuth.verifySessionMiddleware, (req, res) => {
+  try {
+    const { device_name, device_type } = req.body;
+    if (!device_name || !device_type) {
+      return res.status(400).json({ error: 'device_name và device_type là bắt buộc' });
+    }
+    const data = {
+      ...req.body,
+      created_by: req.user?.username || 'Unknown',
+      updated_by: req.user?.username || 'Unknown'
+    };
+    const id = db.createItDevice(data);
+    res.json({ success: true, id, message: 'Đã tạo thiết bị IT thành công' });
+  } catch (err) {
+    console.error('Error creating IT device:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.put('/api/it-devices/:id', userAuth.verifySessionMiddleware, (req, res) => {
+  try {
+    const { id } = req.params;
+    const existing = db.getItDeviceById(id);
+    if (!existing) {
+      return res.status(404).json({ error: 'Không tìm thấy thiết bị IT' });
+    }
+    const { device_name, device_type } = req.body;
+    if (!device_name || !device_type) {
+      return res.status(400).json({ error: 'device_name và device_type là bắt buộc' });
+    }
+    const data = {
+      ...existing,
+      ...req.body,
+      updated_by: req.user?.username || 'Unknown'
+    };
+    db.updateItDevice(id, data);
+    res.json({ success: true, message: 'Đã cập nhật thiết bị IT thành công' });
+  } catch (err) {
+    console.error('Error updating IT device:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/api/it-devices/:id', userAuth.verifySessionMiddleware, (req, res) => {
+  try {
+    const { id } = req.params;
+    const existing = db.getItDeviceById(id);
+    if (!existing) {
+      return res.status(404).json({ error: 'Không tìm thấy thiết bị IT' });
+    }
+    db.deleteItDevice(id);
+    res.json({ success: true, message: 'Đã xóa thiết bị IT thành công' });
+  } catch (err) {
+    console.error('Error deleting IT device:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 
 // Serve static files
 app.use(express.static(path.join(__dirname, 'public')));

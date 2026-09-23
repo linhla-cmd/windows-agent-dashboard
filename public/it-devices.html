@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quản lý Thiết bị IT - Dashboard</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: #0f0f1e;
+      color: #e0e0e0;
+      min-height: 100vh;
+    }
+
+    .container {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 260px;
+      background: #1a1a2e;
+      border-right: 1px solid #16213e;
+      padding: 0;
+      position: fixed;
+      height: 100vh;
+      overflow-y: auto;
+    }
+
+    .sidebar-header {
+      padding: 20px;
+      border-bottom: 1px solid #16213e;
+      background: #16213e;
+    }
+
+    .sidebar-header h2 {
+      font-size: 16px;
+      font-weight: 600;
+      color: #0f3460;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .sidebar-menu {
+      list-style: none;
+      padding: 10px 0;
+    }
+
+    .sidebar-menu li {
+      margin: 5px 0;
+    }
+
+    .sidebar-menu a {
+      display: block;
+      padding: 12px 20px;
+      color: #a0a0a0;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      border-left: 3px solid transparent;
+    }
+
+    .sidebar-menu a:hover {
+      background: #16213e;
+      color: #0f3460;
+      border-left-color: #0f3460;
+    }
+
+    .sidebar-menu a.active {
+      background: #16213e;
+      color: #0f3460;
+      border-left-color: #0f3460;
+      font-weight: 600;
+    }
+
+    /* Main Content */
+    .main-content {
+      flex: 1;
+      margin-left: 260px;
+      background: #0f0f1e;
+    }
+
+    .header {
+      background: #1a1a2e;
+      border-bottom: 1px solid #16213e;
+      padding: 20px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header h1 {
+      font-size: 24px;
+      font-weight: 600;
+      color: #e0e0e0;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: #0f3460;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #1a4d7a;
+    }
+
+    .btn-secondary {
+      background: #16213e;
+      color: #a0a0a0;
+      border: 1px solid #0f3460;
+    }
+
+    .btn-secondary:hover {
+      background: #1a3a52;
+    }
+
+    .btn-danger {
+      background: #c41e3a;
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #9b1830;
+    }
+
+    .btn-small {
+      padding: 6px 12px;
+      font-size: 12px;
+    }
+
+    /* Stats */
+    .stats-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      padding: 30px;
+      background: #0f0f1e;
+    }
+
+    .stat-card {
+      background: #16213e;
+      border: 1px solid #0f3460;
+      border-radius: 8px;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .stat-card h3 {
+      font-size: 12px;
+      color: #a0a0a0;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 10px;
+    }
+
+    .stat-card .number {
+      font-size: 32px;
+      font-weight: 700;
+      color: #0f3460;
+    }
+
+    /* Filters */
+    .filters-section {
+      padding: 20px 30px;
+      background: #1a1a2e;
+      border-bottom: 1px solid #16213e;
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+      align-items: flex-end;
+    }
+
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .filter-group label {
+      font-size: 12px;
+      color: #a0a0a0;
+      font-weight: 500;
+      text-transform: uppercase;
+    }
+
+    .filter-group select,
+    .filter-group input {
+      padding: 8px 12px;
+      background: #16213e;
+      border: 1px solid #0f3460;
+      border-radius: 4px;
+      color: #e0e0e0;
+      font-size: 13px;
+      min-width: 150px;
+    }
+
+    .filter-group input::placeholder {
+      color: #606070;
+    }
+
+    /* Table */
+    .table-section {
+      padding: 30px;
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #16213e;
+      border: 1px solid #0f3460;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    thead {
+      background: #0f3460;
+      font-weight: 600;
+      color: #e0e0e0;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    th {
+      padding: 12px 15px;
+      text-align: left;
+      border-bottom: 1px solid #0f3460;
+    }
+
+    td {
+      padding: 12px 15px;
+      border-bottom: 1px solid #1a2a3e;
+      font-size: 13px;
+    }
+
+    tbody tr:hover {
+      background: #1a2a3e;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .status-active {
+      background: #10b981;
+      color: white;
+    }
+
+    .status-broken {
+      background: #ef4444;
+      color: white;
+    }
+
+    .status-maintenance {
+      background: #f59e0b;
+      color: white;
+    }
+
+    .status-waiting {
+      background: #8b5cf6;
+      color: white;
+    }
+
+    .status-retired {
+      background: #6b7280;
+      color: white;
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-edit {
+      background: #0f3460;
+      color: white;
+      padding: 5px 10px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 11px;
+    }
+
+    .btn-edit:hover {
+      background: #1a4d7a;
+    }
+
+    .btn-delete {
+      background: #c41e3a;
+      color: white;
+      padding: 5px 10px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 11px;
+    }
+
+    .btn-delete:hover {
+      background: #9b1830;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #606070;
+    }
+
+    .empty-state p {
+      margin-bottom: 20px;
+    }
+
+    /* Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: #1a1a2e;
+      border: 1px solid #0f3460;
+      border-radius: 8px;
+      padding: 30px;
+      max-width: 600px;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      color: #e0e0e0;
+    }
+
+    .modal-form {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .form-group label {
+      font-size: 12px;
+      color: #a0a0a0;
+      font-weight: 500;
+      text-transform: uppercase;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      padding: 10px 12px;
+      background: #16213e;
+      border: 1px solid #0f3460;
+      border-radius: 4px;
+      color: #e0e0e0;
+      font-size: 13px;
+      font-family: inherit;
+    }
+
+    .form-group textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+
+    .modal-footer {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-top: 20px;
+    }
+
+    .modal-footer button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .modal-footer .btn-cancel {
+      background: #16213e;
+      color: #a0a0a0;
+    }
+
+    .modal-footer .btn-submit {
+      background: #0f3460;
+      color: white;
+    }
+
+    /* Toast Notifications */
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #16213e;
+      border: 1px solid #0f3460;
+      border-left: 4px solid #0f3460;
+      color: #e0e0e0;
+      padding: 15px 20px;
+      border-radius: 6px;
+      z-index: 2000;
+      animation: slideIn 0.3s ease;
+      max-width: 400px;
+    }
+
+    .toast.success {
+      border-left-color: #10b981;
+    }
+
+    .toast.error {
+      border-left-color: #ef4444;
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(400px);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    /* Loading */
+    .loading {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border: 2px solid #0f3460;
+      border-radius: 50%;
+      border-top-color: transparent;
+      animation: spin 0.6s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .sidebar {
+        width: 220px;
+      }
+      .main-content {
+        margin-left: 220px;
+      }
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        width: 200px;
+      }
+      .main-content {
+        margin-left: 200px;
+      }
+      .header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+      }
+      .filters-section {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .filter-group select,
+      .filter-group input {
+        min-width: 100%;
+      }
+      .stats-container {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <h2>Dashboard</h2>
+      </div>
+      <ul class="sidebar-menu">
+        <li><a href="/dashboard.html">📊 Dashboard</a></li>
+        <li><a href="/it-devices.html" class="active">🖥️ Thiết bị IT</a></li>
+      </ul>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Header -->
+      <div class="header">
+        <h1>🖥️ Quản lý Thiết bị IT</h1>
+        <div class="header-actions">
+          <button class="btn btn-primary" onclick="openAddModal()">
+            + Thêm thiết bị
+          </button>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-container" id="statsContainer">
+        <div class="stat-card">
+          <h3>Tổng thiết bị</h3>
+          <div class="number" id="totalDevices">0</div>
+        </div>
+        <div class="stat-card">
+          <h3>Đang sử dụng</h3>
+          <div class="number" id="activeDevices">0</div>
+        </div>
+        <div class="stat-card">
+          <h3>Hỏng</h3>
+          <div class="number" id="brokenDevices">0</div>
+        </div>
+        <div class="stat-card">
+          <h3>Bảo trì</h3>
+          <div class="number" id="maintenanceDevices">0</div>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="filters-section">
+        <div class="filter-group">
+          <label for="filterType">Loại thiết bị</label>
+          <select id="filterType" onchange="applyFilters()">
+            <option value="">Tất cả</option>
+            <option value="Máy tính">Máy tính</option>
+            <option value="Máy in">Máy in</option>
+            <option value="Switch">Switch</option>
+            <option value="Router">Router</option>
+            <option value="UPS">UPS</option>
+            <option value="Màn hình">Màn hình</option>
+            <option value="Server">Server</option>
+            <option value="Khác">Khác</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label for="filterStatus">Trạng thái</label>
+          <select id="filterStatus" onchange="applyFilters()">
+            <option value="">Tất cả</option>
+            <option value="Đang sử dụng">Đang sử dụng</option>
+            <option value="Hỏng">Hỏng</option>
+            <option value="Bảo trì">Bảo trì</option>
+            <option value="Chờ thanh lý">Chờ thanh lý</option>
+            <option value="Đã thanh lý">Đã thanh lý</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label for="filterDepartment">Phòng ban</label>
+          <select id="filterDepartment" onchange="applyFilters()">
+            <option value="">Tất cả</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label for="searchBox">Tìm kiếm</label>
+          <input
+            type="text"
+            id="searchBox"
+            placeholder="Tên, Mã tài sản, Serial..."
+            onkeyup="applyFilters()"
+          />
+        </div>
+
+        <button class="btn btn-secondary btn-small" onclick="clearFilters()">
+          ✕ Xóa bộ lọc
+        </button>
+      </div>
+
+      <!-- Table -->
+      <div class="table-section">
+        <table id="devicesTable">
+          <thead>
+            <tr>
+              <th>Tên thiết bị</th>
+              <th>Loại</th>
+              <th>Mã tài sản</th>
+              <th>Serial</th>
+              <th>Người dùng</th>
+              <th>Phòng ban</th>
+              <th>Trạng thái</th>
+              <th>Hành động</th>
+            </tr>
+          </thead>
+          <tbody id="devicesBody">
+            <tr>
+              <td colspan="8" style="text-align: center; padding: 40px;">
+                <div class="loading" style="display: inline-block;"></div> Đang tải...
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+  <!-- Modal Form -->
+  <div class="modal" id="deviceModal">
+    <div class="modal-content">
+      <div class="modal-header" id="modalTitle">Thêm thiết bị IT</div>
+      <form class="modal-form" onsubmit="submitDevice(event)">
+        <input type="hidden" id="deviceId" />
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="deviceName">Tên thiết bị *</label>
+            <input type="text" id="deviceName" required />
+          </div>
+          <div class="form-group">
+            <label for="deviceType">Loại thiết bị *</label>
+            <select id="deviceType" required>
+              <option value="">Chọn loại</option>
+              <option value="Máy tính">Máy tính</option>
+              <option value="Máy in">Máy in</option>
+              <option value="Switch">Switch</option>
+              <option value="Router">Router</option>
+              <option value="UPS">UPS</option>
+              <option value="Màn hình">Màn hình</option>
+              <option value="Server">Server</option>
+              <option value="Khác">Khác</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="assetCode">Mã tài sản</label>
+            <input type="text" id="assetCode" />
+          </div>
+          <div class="form-group">
+            <label for="serialNumber">Số serial</label>
+            <input type="text" id="serialNumber" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="manufacturer">Hãng sản xuất</label>
+            <input type="text" id="manufacturer" />
+          </div>
+          <div class="form-group">
+            <label for="model">Model</label>
+            <input type="text" id="model" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="userName">Người sử dụng</label>
+            <input type="text" id="userName" />
+          </div>
+          <div class="form-group">
+            <label for="department">Phòng ban</label>
+            <input type="text" id="department" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="location">Địa điểm đặt</label>
+          <input type="text" id="location" />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="purchaseDate">Ngày mua</label>
+            <input type="date" id="purchaseDate" />
+          </div>
+          <div class="form-group">
+            <label for="warrantyExpire">Hạn bảo hành</label>
+            <input type="date" id="warrantyExpire" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="status">Trạng thái</label>
+          <select id="status">
+            <option value="Đang sử dụng">Đang sử dụng</option>
+            <option value="Hỏng">Hỏng</option>
+            <option value="Bảo trì">Bảo trì</option>
+            <option value="Chờ thanh lý">Chờ thanh lý</option>
+            <option value="Đã thanh lý">Đã thanh lý</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="notes">Ghi chú</label>
+          <textarea id="notes"></textarea>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="modal-footer btn-cancel" onclick="closeModal()">
+            Hủy
+          </button>
+          <button type="submit" class="modal-footer btn-submit">
+            Lưu
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    let currentDevices = [];
+    let editingId = null;
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      loadDevices();
+      loadStats();
+      loadDepartments();
+    });
+
+    async function loadDevices() {
+      try {
+        const response = await fetch('/api/it-devices');
+        if (!response.ok) throw new Error('Failed to load devices');
+        const data = await response.json();
+        currentDevices = data.devices || [];
+        renderTable(currentDevices);
+      } catch (error) {
+        console.error('Error loading devices:', error);
+        showToast('Lỗi khi tải danh sách thiết bị', 'error');
+      }
+    }
+
+    async function loadStats() {
+      try {
+        const response = await fetch('/api/it-devices/stats');
+        if (!response.ok) throw new Error('Failed to load stats');
+        const data = await response.json();
+
+        document.getElementById('totalDevices').textContent = data.total || 0;
+
+        const byStatus = data.byStatus || [];
+        const statusMap = {};
+        byStatus.forEach(item => {
+          statusMap[item.status] = item.count;
+        });
+
+        document.getElementById('activeDevices').textContent = statusMap['Đang sử dụng'] || 0;
+        document.getElementById('brokenDevices').textContent = statusMap['Hỏng'] || 0;
+        document.getElementById('maintenanceDevices').textContent = statusMap['Bảo trì'] || 0;
+      } catch (error) {
+        console.error('Error loading stats:', error);
+      }
+    }
+
+    async function loadDepartments() {
+      try {
+        const response = await fetch('/api/it-devices');
+        if (!response.ok) return;
+        const data = await response.json();
+        const departments = [...new Set((data.devices || []).map(d => d.department).filter(Boolean))];
+        const select = document.getElementById('filterDepartment');
+        departments.forEach(dept => {
+          const option = document.createElement('option');
+          option.value = dept;
+          option.textContent = dept;
+          select.appendChild(option);
+        });
+      } catch (error) {
+        console.error('Error loading departments:', error);
+      }
+    }
+
+    function renderTable(devices) {
+      const tbody = document.getElementById('devicesBody');
+      if (devices.length === 0) {
+        tbody.innerHTML =
+          '<tr><td colspan="8" style="text-align: center; padding: 40px; color: #606070;">Không có thiết bị</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = devices
+        .map(
+          device => `
+        <tr>
+          <td>${device.device_name}</td>
+          <td>${device.device_type}</td>
+          <td>${device.asset_code || '-'}</td>
+          <td>${device.serial_number || '-'}</td>
+          <td>${device.user_name || '-'}</td>
+          <td>${device.department || '-'}</td>
+          <td>${getStatusBadge(device.status)}</td>
+          <td>
+            <div class="actions">
+              <button class="btn-edit" onclick="editDevice(${device.id})">✏️ Sửa</button>
+              <button class="btn-delete" onclick="deleteDevice(${device.id})">🗑️ Xóa</button>
+            </div>
+          </td>
+        </tr>
+      `
+        )
+        .join('');
+    }
+
+    function getStatusBadge(status) {
+      const statusMap = {
+        'Đang sử dụng': 'status-active',
+        'Hỏng': 'status-broken',
+        'Bảo trì': 'status-maintenance',
+        'Chờ thanh lý': 'status-waiting',
+        'Đã thanh lý': 'status-retired'
+      };
+      const cssClass = statusMap[status] || 'status-active';
+      return `<span class="status-badge ${cssClass}">${status}</span>`;
+    }
+
+    function openAddModal() {
+      editingId = null;
+      document.getElementById('modalTitle').textContent = 'Thêm thiết bị IT';
+      document.getElementById('deviceId').value = '';
+      document.getElementById('deviceName').value = '';
+      document.getElementById('deviceType').value = '';
+      document.getElementById('assetCode').value = '';
+      document.getElementById('serialNumber').value = '';
+      document.getElementById('manufacturer').value = '';
+      document.getElementById('model').value = '';
+      document.getElementById('userName').value = '';
+      document.getElementById('department').value = '';
+      document.getElementById('location').value = '';
+      document.getElementById('purchaseDate').value = '';
+      document.getElementById('warrantyExpire').value = '';
+      document.getElementById('status').value = 'Đang sử dụng';
+      document.getElementById('notes').value = '';
+      document.getElementById('deviceModal').classList.add('active');
+    }
+
+    async function editDevice(id) {
+      try {
+        const response = await fetch(`/api/it-devices/${id}`);
+        if (!response.ok) throw new Error('Failed to load device');
+        const data = await response.json();
+        const device = data.device;
+
+        editingId = id;
+        document.getElementById('modalTitle').textContent = 'Chỉnh sửa thiết bị IT';
+        document.getElementById('deviceId').value = device.id;
+        document.getElementById('deviceName').value = device.device_name;
+        document.getElementById('deviceType').value = device.device_type;
+        document.getElementById('assetCode').value = device.asset_code || '';
+        document.getElementById('serialNumber').value = device.serial_number || '';
+        document.getElementById('manufacturer').value = device.manufacturer || '';
+        document.getElementById('model').value = device.model || '';
+        document.getElementById('userName').value = device.user_name || '';
+        document.getElementById('department').value = device.department || '';
+        document.getElementById('location').value = device.location || '';
+        document.getElementById('purchaseDate').value = device.purchase_date
+          ? new Date(device.purchase_date).toISOString().split('T')[0]
+          : '';
+        document.getElementById('warrantyExpire').value = device.warranty_expire
+          ? new Date(device.warranty_expire).toISOString().split('T')[0]
+          : '';
+        document.getElementById('status').value = device.status;
+        document.getElementById('notes').value = device.notes || '';
+        document.getElementById('deviceModal').classList.add('active');
+      } catch (error) {
+        console.error('Error loading device:', error);
+        showToast('Lỗi khi tải dữ liệu thiết bị', 'error');
+      }
+    }
+
+    function closeModal() {
+      document.getElementById('deviceModal').classList.remove('active');
+      editingId = null;
+    }
+
+    async function submitDevice(event) {
+      event.preventDefault();
+
+      const deviceId = document.getElementById('deviceId').value;
+      const payload = {
+        device_name: document.getElementById('deviceName').value,
+        device_type: document.getElementById('deviceType').value,
+        asset_code: document.getElementById('assetCode').value || null,
+        serial_number: document.getElementById('serialNumber').value || null,
+        manufacturer: document.getElementById('manufacturer').value || null,
+        model: document.getElementById('model').value || null,
+        user_name: document.getElementById('userName').value || null,
+        department: document.getElementById('department').value || null,
+        location: document.getElementById('location').value || null,
+        purchase_date: document.getElementById('purchaseDate').value
+          ? new Date(document.getElementById('purchaseDate').value).getTime()
+          : null,
+        warranty_expire: document.getElementById('warrantyExpire').value
+          ? new Date(document.getElementById('warrantyExpire').value).getTime()
+          : null,
+        status: document.getElementById('status').value,
+        notes: document.getElementById('notes').value || null
+      };
+
+      try {
+        let response;
+        if (editingId) {
+          response = await fetch(`/api/it-devices/${editingId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+        } else {
+          response = await fetch('/api/it-devices', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+        }
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || 'Failed to save device');
+        }
+
+        showToast(editingId ? 'Cập nhật thiết bị thành công' : 'Thêm thiết bị thành công', 'success');
+        closeModal();
+        loadDevices();
+        loadStats();
+      } catch (error) {
+        console.error('Error saving device:', error);
+        showToast('Lỗi: ' + error.message, 'error');
+      }
+    }
+
+    async function deleteDevice(id) {
+      if (!confirm('Bạn có chắc muốn xóa thiết bị này?')) return;
+
+      try {
+        const response = await fetch(`/api/it-devices/${id}`, { method: 'DELETE' });
+        if (!response.ok) throw new Error('Failed to delete device');
+
+        showToast('Xóa thiết bị thành công', 'success');
+        loadDevices();
+        loadStats();
+      } catch (error) {
+        console.error('Error deleting device:', error);
+        showToast('Lỗi khi xóa thiết bị', 'error');
+      }
+    }
+
+    function applyFilters() {
+      const type = document.getElementById('filterType').value;
+      const status = document.getElementById('filterStatus').value;
+      const department = document.getElementById('filterDepartment').value;
+      const search = document.getElementById('searchBox').value.toLowerCase();
+
+      const filtered = currentDevices.filter(device => {
+        const matchType = !type || device.device_type === type;
+        const matchStatus = !status || device.status === status;
+        const matchDept = !department || device.department === department;
+        const matchSearch =
+          !search ||
+          [
+            device.device_name,
+            device.asset_code,
+            device.serial_number,
+            device.user_name
+          ]
+            .join(' ')
+            .toLowerCase()
+            .includes(search);
+
+        return matchType && matchStatus && matchDept && matchSearch;
+      });
+
+      renderTable(filtered);
+    }
+
+    function clearFilters() {
+      document.getElementById('filterType').value = '';
+      document.getElementById('filterStatus').value = '';
+      document.getElementById('filterDepartment').value = '';
+      document.getElementById('searchBox').value = '';
+      renderTable(currentDevices);
+    }
+
+    function showToast(message, type = 'success') {
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+    }
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape' && document.getElementById('deviceModal').classList.contains('active')) {
+        closeModal();
+      }
+    });
+  </script>
+</body>
+</html>

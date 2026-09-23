@@ -88,6 +88,30 @@ CREATE TABLE IF NOT EXISTS sessions (
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 CREATE INDEX IF NOT EXISTS idx_sessions_expires_at ON sessions(expires_at);
+
+CREATE TABLE IF NOT EXISTS it_devices (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  device_name TEXT NOT NULL,
+  device_type TEXT NOT NULL,
+  asset_code TEXT,
+  serial_number TEXT,
+  manufacturer TEXT,
+  model TEXT,
+  user_name TEXT,
+  department TEXT,
+  location TEXT,
+  purchase_date INTEGER,
+  warranty_expire INTEGER,
+  status TEXT NOT NULL DEFAULT 'Đang sử dụng' CHECK (status IN ('Đang sử dụng','Hỏng','Bảo trì','Chờ thanh lý','Đã thanh lý')),
+  notes TEXT,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL,
+  created_by TEXT,
+  updated_by TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_it_devices_asset_code ON it_devices(asset_code);
+CREATE INDEX IF NOT EXISTS idx_it_devices_status ON it_devices(status);
+CREATE INDEX IF NOT EXISTS idx_it_devices_device_type ON it_devices(device_type);
 `);
 
 // Migration bổ sung trường người sử dụng cho các CSDL đã tồn tại.
@@ -303,4 +327,130 @@ function updateQRPrinted(deviceId, isPrinted = 1, timestamp = Date.now()) {
   `).run(isPrinted ? 1 : 0, isPrinted ? timestamp : null, Date.now(), deviceId);
 }
 
-module.exports = { updateQRPrinted, updateUserRole, db, saveHeartbeat, getDevices, deleteDevicesInactiveFor30Days, updateDeviceMetadata, getDeviceAlerts, getRecentHeartbeats, getUsers, getUserByUsername, createUser, updateUserStatus, deleteUser, updateUserPassword, markLogin, createSession, getSession, deleteSession, createRefreshToken, getRefreshToken, deleteRefreshToken, deleteUserRefreshTokens, deleteExpiredRefreshTokens, saveScanLog, getScanLogs, dbPath };
+// IT Devices Management Functions
+function getAllItDevices(filters = {}) {
+  let query = 'SELECT * FROM it_devices WHERE 1=1';
+  const params = [];
+
+  if (filters.type) {
+    query += ' AND device_type = ?';
+    params.push(filters.type);
+  }
+  if (filters.status) {
+    query += ' AND status = ?';
+    params.push(filters.status);
+  }
+  if (filters.department) {
+    query += ' AND department = ?';
+    params.push(filters.department);
+  }
+  if (filters.search) {
+    query += ' AND (device_name LIKE ? OR asset_code LIKE ? OR serial_number LIKE ? OR user_name LIKE ?)';
+    const searchTerm = `%${filters.search}%`;
+    params.push(searchTerm, searchTerm, searchTerm, searchTerm);
+  }
+
+  query += ' ORDER BY created_at DESC';
+  return db.prepare(query).all(...params);
+}
+
+function getItDeviceById(id) {
+  return db.prepare('SELECT * FROM it_devices WHERE id = ?').get(id);
+}
+
+function createItDevice(data) {
+  const now = Date.now();
+  return db.prepare(`
+    INSERT INTO it_devices (
+      device_name, device_type, asset_code, serial_number, manufacturer, model,
+      user_name, department, location, purchase_date, warranty_expire,
+      status, notes, created_at, updated_at, created_by, updated_by
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(
+    data.device_name,
+    data.device_type,
+    data.asset_code || null,
+    data.serial_number || null,
+    data.manufacturer || null,
+    data.model || null,
+    data.user_name || null,
+    data.department || null,
+    data.location || null,
+    data.purchase_date || null,
+    data.warranty_expire || null,
+    data.status || 'Đang sử dụng',
+    data.notes || null,
+    now,
+    now,
+    data.created_by || null,
+    data.updated_by || null
+  ).lastInsertRowid;
+}
+
+function updateItDevice(id, data) {
+  const now = Date.now();
+  return db.prepare(`
+    UPDATE it_devices SET
+      device_name = ?,
+      device_type = ?,
+      asset_code = ?,
+      serial_number = ?,
+      manufacturer = ?,
+      model = ?,
+      user_name = ?,
+      department = ?,
+      location = ?,
+      purchase_date = ?,
+      warranty_expire = ?,
+      status = ?,
+      notes = ?,
+      updated_at = ?,
+      updated_by = ?
+    WHERE id = ?
+  `).run(
+    data.device_name,
+    data.device_type,
+    data.asset_code || null,
+    data.serial_number || null,
+    data.manufacturer || null,
+    data.model || null,
+    data.user_name || null,
+    data.department || null,
+    data.location || null,
+    data.purchase_date || null,
+    data.warranty_expire || null,
+    data.status,
+    data.notes || null,
+    now,
+    data.updated_by || null,
+    id
+  );
+}
+
+function deleteItDevice(id) {
+  return db.prepare('DELETE FROM it_devices WHERE id = ?').run(id);
+}
+
+function getItDeviceStats() {
+  const byType = db.prepare(`
+    SELECT device_type, COUNT(*) as count
+    FROM it_devices
+    GROUP BY device_type
+  `).all();
+
+  const byStatus = db.prepare(`
+    SELECT status, COUNT(*) as count
+    FROM it_devices
+    GROUP BY status
+  `).all();
+
+  const total = db.prepare('SELECT COUNT(*) as count FROM it_devices').get();
+
+  return {
+    total: total.count,
+    byType,
+    byStatus
+  };
+}
+
+module.exports = { updateQRPrinted, updateUserRole, db, saveHeartbeat, getDevices, deleteDevicesInactiveFor30Days, updateDeviceMetadata, getDeviceAlerts, getRecentHeartbeats, getUsers, getUserByUsername, createUser, updateUserStatus, deleteUser, updateUserPassword, markLogin, createSession, getSession, deleteSession, createRefreshToken, getRefreshToken, deleteRefreshToken, deleteUserRefreshTokens, deleteExpiredRefreshTokens, saveScanLog, getScanLogs, dbPath, getAllItDevices, getItDeviceById, createItDevice, updateItDevice, deleteItDevice, getItDeviceStats };
