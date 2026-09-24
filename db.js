@@ -109,9 +109,39 @@ CREATE TABLE IF NOT EXISTS it_devices (
   created_by TEXT,
   updated_by TEXT
 );
+
+CREATE TABLE IF NOT EXISTS it_inventory_tickets (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  ticket_code TEXT NOT NULL UNIQUE,
+  title TEXT NOT NULL,
+  department TEXT,
+  device_type TEXT,
+  status TEXT DEFAULT 'Open',
+  created_at INTEGER NOT NULL,
+  created_by TEXT,
+  completed_at INTEGER
+);
+
+CREATE TABLE IF NOT EXISTS it_inventory_ticket_items (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  ticket_id INTEGER NOT NULL,
+  it_device_id INTEGER NOT NULL,
+  status TEXT DEFAULT 'Pending',
+  scanned_at INTEGER,
+  scanned_by TEXT,
+  notes TEXT,
+  scanned_location TEXT,
+  FOREIGN KEY (ticket_id) REFERENCES it_inventory_tickets(id) ON DELETE CASCADE,
+  FOREIGN KEY (it_device_id) REFERENCES it_devices(id) ON DELETE CASCADE
+);
+
 CREATE INDEX IF NOT EXISTS idx_it_devices_asset_code ON it_devices(asset_code);
 CREATE INDEX IF NOT EXISTS idx_it_devices_status ON it_devices(status);
 CREATE INDEX IF NOT EXISTS idx_it_devices_device_type ON it_devices(device_type);
+CREATE INDEX IF NOT EXISTS idx_it_inv_tickets_code ON it_inventory_tickets(ticket_code);
+CREATE INDEX IF NOT EXISTS idx_it_inv_tickets_status ON it_inventory_tickets(status);
+CREATE INDEX IF NOT EXISTS idx_it_inv_items_ticket ON it_inventory_ticket_items(ticket_id);
+CREATE INDEX IF NOT EXISTS idx_it_inv_items_device ON it_inventory_ticket_items(it_device_id);
 `);
 
 // Migration bổ sung trường người sử dụng cho các CSDL đã tồn tại.
@@ -453,4 +483,247 @@ function getItDeviceStats() {
   };
 }
 
-module.exports = { updateQRPrinted, updateUserRole, db, saveHeartbeat, getDevices, deleteDevicesInactiveFor30Days, updateDeviceMetadata, getDeviceAlerts, getRecentHeartbeats, getUsers, getUserByUsername, createUser, updateUserStatus, deleteUser, updateUserPassword, markLogin, createSession, getSession, deleteSession, createRefreshToken, getRefreshToken, deleteRefreshToken, deleteUserRefreshTokens, deleteExpiredRefreshTokens, saveScanLog, getScanLogs, dbPath, getAllItDevices, getItDeviceById, createItDevice, updateItDevice, deleteItDevice, getItDeviceStats };
+// IT Inventory Ticket Management
+function generateItInventoryTicketCode() {
+  const d = new Date();
+  const dateStr = d.getFullYear().toString() +
+    String(d.getMonth() + 1).padStart(2, '0') +
+    String(d.getDate()).padStart(2, '0');
+  const prefix = `KKIT-${dateStr}-`;
+  
+  const row = db.prepare(`
+    SELECT ticket_code FROM it_inventory_tickets 
+    WHERE ticket_code LIKE ? 
+    ORDER BY id DESC LIMIT 1
+  `).get(`${prefix}%`);
+  
+  let nextSeq = 1;
+  if (row && row.ticket_code) {
+    const parts = row.ticket_code.split('-');
+    const seqStr = parts[parts.length - 1];
+    const seq = parseInt(seqStr, 10);
+    if (!isNaN(seq)) nextSeq = seq + 1;
+  }
+  return `${prefix}${String(nextSeq).padStart(3, '0')}`;
+}
+
+function createItInventoryTicket(data) {
+  const now = Date.now();
+  const ticketCode = data.ticket_code || generateItInventoryTicketCode();
+  
+  const tx = db.transaction(() => {
+    const ticketId = db.prepare(`
+      INSERT INTO it_inventory_tickets (
+        ticket_code, title, department, device_type, status, created_at, created_by
+      ) VALUES (?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      ticketCode,
+      data.title,
+      data.department || null,
+      data.device_type || null,
+      'Open',
+      now,
+      data.created_by || null
+    ).lastInsertRowid;
+
+    // Snapshot matching IT devices into items
+    let deviceQuery = 'SELECT id FROM it_devices WHERE 1=1';
+    const params = [];
+
+    if (data.department) {
+      deviceQuery += ' AND department = ?';
+      params.push(data.department);
+    }
+    if (data.device_type) {
+      deviceQuery += ' AND device_type = ?';
+      params.push(data.device_type);
+    }
+
+    const targetDevices = db.prepare(deviceQuery).all(...params);
+    const insertItemStmt = db.prepare(`
+      INSERT INTO it_inventory_ticket_items (ticket_id, it_device_id, status)
+      VALUES (?, ?, 'Pending')
+    `);
+
+    for (const dev of targetDevices) {
+      insertItemStmt.run(ticketId, dev.id);
+    }
+
+    return { ticketId, ticketCode, totalItems: targetDevices.length };
+  });
+
+  return tx();
+}
+
+function getItInventoryTickets(filters = {}) {
+  let query = `
+    SELECT t.*, 
+      COUNT(i.id) as total_items,
+      SUM(CASE WHEN i.status = 'Scanned' THEN 1 ELSE 0 END) as scanned_items,
+      SUM(CASE WHEN i.status = 'Pending' THEN 1 ELSE 0 END) as pending_items,
+      SUM(CASE WHEN i.status = 'Missing' THEN 1 ELSE 0 END) as missing_items,
+      SUM(CASE WHEN i.status = 'Abnormal' THEN 1 ELSE 0 END) as abnormal_items
+    FROM it_inventory_tickets t
+    LEFT JOIN it_inventory_ticket_items i ON t.id = i.ticket_id
+    WHERE 1=1
+  `;
+  const params = [];
+
+  if (filters.status) {
+    query += ' AND t.status = ?';
+    params.push(filters.status);
+  }
+  if (filters.department) {
+    query += ' AND t.department = ?';
+    params.push(filters.department);
+  }
+  if (filters.search) {
+    query += ' AND (t.ticket_code LIKE ? OR t.title LIKE ?)';
+    const s = `%${filters.search}%`;
+    params.push(s, s);
+  }
+
+  query += ' GROUP BY t.id ORDER BY t.created_at DESC';
+  return db.prepare(query).all(...params);
+}
+
+function getItInventoryTicketById(idOrCode) {
+  let ticket;
+  if (typeof idOrCode === 'number' || /^\d+$/.test(String(idOrCode))) {
+    ticket = db.prepare('SELECT * FROM it_inventory_tickets WHERE id = ?').get(idOrCode);
+  } else {
+    ticket = db.prepare('SELECT * FROM it_inventory_tickets WHERE ticket_code = ?').get(idOrCode);
+  }
+
+  if (!ticket) return null;
+
+  const items = db.prepare(`
+    SELECT i.*, 
+      d.device_name, d.device_type, d.asset_code, d.serial_number,
+      d.manufacturer, d.model, d.user_name, d.department as device_department,
+      d.location as device_location, d.status as device_status,
+      d.warranty_expire, d.purchase_date
+    FROM it_inventory_ticket_items i
+    JOIN it_devices d ON i.it_device_id = d.id
+    WHERE i.ticket_id = ?
+    ORDER BY i.id ASC
+  `).all(ticket.id);
+
+  const stats = {
+    total: items.length,
+    scanned: items.filter(item => item.status === 'Scanned').length,
+    pending: items.filter(item => item.status === 'Pending').length,
+    missing: items.filter(item => item.status === 'Missing').length,
+    abnormal: items.filter(item => item.status === 'Abnormal').length
+  };
+
+  return {
+    ...ticket,
+    stats,
+    items
+  };
+}
+
+function scanItInventoryTicketItem(ticketId, scanData) {
+  // ticketId can be ticket id or code
+  const ticket = getItInventoryTicketById(ticketId);
+  if (!ticket) return { success: false, message: 'Không tìm thấy phiếu kiểm kê' };
+  if (ticket.status === 'Completed' || ticket.status === 'Cancelled') {
+    return { success: false, message: `Phiếu kiểm kê đã ${ticket.status === 'Completed' ? 'hoàn thành' : 'hủy'}, không thể quét thêm.` };
+  }
+
+  const { asset_code, serial_number, qr_payload, it_device_id, scanned_by, notes, scanned_location, status } = scanData;
+  const itemStatus = status || 'Scanned';
+  const now = Date.now();
+
+  let targetItem = null;
+
+  if (it_device_id) {
+    targetItem = ticket.items.find(i => i.it_device_id == it_device_id);
+  }
+
+  if (!targetItem && (asset_code || serial_number || qr_payload)) {
+    // Attempt parse IT payload format IT-{id}-{device_name}-{asset_code}
+    let parsedId = null;
+    let parsedAssetCode = asset_code;
+    let parsedSerial = serial_number;
+
+    const queryStr = (qr_payload || asset_code || serial_number || '').trim();
+    if (queryStr.startsWith('IT-')) {
+      const parts = queryStr.split('-');
+      if (parts.length >= 2 && /^\d+$/.test(parts[1])) {
+        parsedId = parseInt(parts[1], 10);
+      }
+      if (parts.length >= 4) {
+        parsedAssetCode = parts.slice(3).join('-');
+      }
+    }
+
+    targetItem = ticket.items.find(i => {
+      if (parsedId && i.it_device_id === parsedId) return true;
+      if (parsedAssetCode && i.asset_code && i.asset_code.toLowerCase() === parsedAssetCode.toLowerCase()) return true;
+      if (queryStr && i.asset_code && i.asset_code.toLowerCase() === queryStr.toLowerCase()) return true;
+      if (parsedSerial && i.serial_number && i.serial_number.toLowerCase() === parsedSerial.toLowerCase()) return true;
+      if (queryStr && i.serial_number && i.serial_number.toLowerCase() === queryStr.toLowerCase()) return true;
+      return false;
+    });
+  }
+
+  if (!targetItem) {
+    return {
+      success: false,
+      message: 'Thiết bị không nằm trong danh sách của phiếu kiểm kê này'
+    };
+  }
+
+  db.prepare(`
+    UPDATE it_inventory_ticket_items
+    SET status = ?,
+        scanned_at = ?,
+        scanned_by = ?,
+        notes = ?,
+        scanned_location = ?
+    WHERE id = ?
+  `).run(itemStatus, now, scanned_by || null, notes || null, scanned_location || null, targetItem.id);
+
+  // Update ticket status to In Progress if it's currently Open
+  if (ticket.status === 'Open') {
+    db.prepare(`UPDATE it_inventory_tickets SET status = 'In Progress' WHERE id = ?`).run(ticket.id);
+  }
+
+  const updatedTicket = getItInventoryTicketById(ticket.id);
+
+  return {
+    success: true,
+    message: `Đã quét thiết bị ${targetItem.device_name} (${targetItem.asset_code || 'N/A'}) thành công`,
+    item: { ...targetItem, status: itemStatus, scanned_at: now, scanned_by: scanned_by || null },
+    stats: updatedTicket.stats
+  };
+}
+
+function updateItInventoryTicketStatus(ticketId, status, completedBy = null) {
+  const ticket = getItInventoryTicketById(ticketId);
+  if (!ticket) return null;
+
+  const validStatuses = ['Open', 'In Progress', 'Completed', 'Cancelled'];
+  if (!validStatuses.includes(status)) {
+    throw new Error('Trạng thái không hợp lệ');
+  }
+
+  const now = Date.now();
+  let completedAt = ticket.completed_at;
+  if (status === 'Completed' || status === 'Cancelled') {
+    completedAt = now;
+  }
+
+  db.prepare(`
+    UPDATE it_inventory_tickets
+    SET status = ?,
+        completed_at = ?
+    WHERE id = ?
+  `).run(status, completedAt, ticket.id);
+
+  return getItInventoryTicketById(ticket.id);
+}
+
+module.exports = { updateQRPrinted, updateUserRole, db, saveHeartbeat, getDevices, deleteDevicesInactiveFor30Days, updateDeviceMetadata, getDeviceAlerts, getRecentHeartbeats, getUsers, getUserByUsername, createUser, updateUserStatus, deleteUser, updateUserPassword, markLogin, createSession, getSession, deleteSession, createRefreshToken, getRefreshToken, deleteRefreshToken, deleteUserRefreshTokens, deleteExpiredRefreshTokens, saveScanLog, getScanLogs, dbPath, getAllItDevices, getItDeviceById, createItDevice, updateItDevice, deleteItDevice, getItDeviceStats, generateItInventoryTicketCode, createItInventoryTicket, getItInventoryTickets, getItInventoryTicketById, scanItInventoryTicketItem, updateItInventoryTicketStatus };

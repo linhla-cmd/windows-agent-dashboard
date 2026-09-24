@@ -418,6 +418,63 @@ app.get('/api/assets/search', async (req, res) => {
       });
     }
 
+    // Priority 1: Search in IT devices first
+    let itDevice = null;
+    let parsedId = null;
+
+    // Parse IT QR payload format: IT-{id}-{device_name}-{asset_code}
+    if (query.startsWith('IT-')) {
+      const parts = query.split('-');
+      if (parts.length >= 2 && /^\d+$/.test(parts[1])) {
+        parsedId = parseInt(parts[1], 10);
+        itDevice = db.getItDeviceById(parsedId);
+      }
+      // If ID lookup fails, try to extract asset_code from payload
+      if (!itDevice && parts.length >= 4) {
+        const extractedCode = parts.slice(3).join('-');
+        const allItDevices = db.getAllItDevices({ search: extractedCode });
+        itDevice = allItDevices.find(d => 
+          (d.asset_code && d.asset_code.toLowerCase() === extractedCode.toLowerCase())
+        );
+      }
+    }
+
+    // Search by asset_code, serial_number, device_name, or ID
+    if (!itDevice) {
+      const allItDevices = db.getAllItDevices({ search: query });
+      itDevice = allItDevices.find(d => 
+        (d.asset_code && d.asset_code.toLowerCase() === query.toLowerCase()) ||
+        (d.serial_number && d.serial_number.toLowerCase() === query.toLowerCase()) ||
+        (d.device_name && d.device_name.toLowerCase() === query.toLowerCase()) ||
+        (d.id && String(d.id) === query)
+      );
+    }
+
+    if (itDevice) {
+      return res.json({
+        success: true,
+        source: 'it_devices',
+        data: {
+          asset_code: itDevice.asset_code || 'N/A',
+          machine_name: itDevice.device_name || 'Unknown',
+          device_type: itDevice.device_type || 'N/A',
+          serial_number: itDevice.serial_number || 'N/A',
+          manufacturer: itDevice.manufacturer || 'N/A',
+          model: itDevice.model || 'N/A',
+          current_user: itDevice.user_name || 'Chưa gán',
+          department: itDevice.department || 'Chưa cập nhật',
+          location: itDevice.location || 'N/A',
+          status: itDevice.status || 'Đang sử dụng',
+          purchase_date: itDevice.purchase_date || null,
+          warranty_expire: itDevice.warranty_expire || null,
+          notes: itDevice.notes || '',
+          it_device_id: itDevice.id,
+          is_online: false
+        }
+      });
+    }
+
+    // Priority 2: Search in Windows Agent devices (legacy)
     const devices = db.getDevices();
     
     // Tìm kiếm thiết bị theo mã tài sản (hoặc hostname/device_id)
@@ -476,6 +533,7 @@ app.get('/api/assets/search', async (req, res) => {
 
     return res.json({
       success: true,
+      source: 'windows_agent',
       data: {
         asset_code: matched.asset_tag || 'N/A',
         machine_name: matched.hostname || 'Unknown',
@@ -1252,6 +1310,90 @@ app.delete('/api/it-devices/:id', userAuth.verifySessionMiddleware, (req, res) =
     res.json({ success: true, message: 'Đã xóa thiết bị IT thành công' });
   } catch (err) {
     console.error('Error deleting IT device:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── IT Inventory Tickets Management ──
+app.get('/api/it-inventory/tickets', userAuth.verifySessionMiddleware, (req, res) => {
+  try {
+    const { status, department, search } = req.query;
+    const tickets = db.getItInventoryTickets({ status, department, search });
+    res.json({ success: true, tickets });
+  } catch (err) {
+    console.error('Error fetching IT inventory tickets:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/it-inventory/tickets', userAuth.verifySessionMiddleware, (req, res) => {
+  try {
+    const { title, department, device_type } = req.body;
+    if (!title) {
+      return res.status(400).json({ error: 'Tiêu đề phiếu kiểm kê là bắt buộc' });
+    }
+    const data = {
+      ...req.body,
+      created_by: req.user?.username || 'Unknown'
+    };
+    const result = db.createItInventoryTicket(data);
+    res.json({ 
+      success: true, 
+      ticketId: result.ticketId,
+      ticketCode: result.ticketCode,
+      totalItems: result.totalItems,
+      message: `Đã tạo phiếu kiểm kê ${result.ticketCode} với ${result.totalItems} thiết bị` 
+    });
+  } catch (err) {
+    console.error('Error creating IT inventory ticket:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/it-inventory/tickets/:id', userAuth.verifySessionMiddleware, (req, res) => {
+  try {
+    const { id } = req.params;
+    const ticket = db.getItInventoryTicketById(id);
+    if (!ticket) {
+      return res.status(404).json({ error: 'Không tìm thấy phiếu kiểm kê' });
+    }
+    res.json({ success: true, ticket });
+  } catch (err) {
+    console.error('Error fetching IT inventory ticket:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/it-inventory/tickets/:id/scan', userAuth.verifySessionMiddleware, (req, res) => {
+  try {
+    const { id } = req.params;
+    const scanData = {
+      ...req.body,
+      scanned_by: req.user?.username || 'Unknown'
+    };
+    const result = db.scanItInventoryTicketItem(id, scanData);
+    res.json(result);
+  } catch (err) {
+    console.error('Error scanning IT inventory ticket item:', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.put('/api/it-inventory/tickets/:id/status', userAuth.verifySessionMiddleware, (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+    if (!status) {
+      return res.status(400).json({ error: 'Trạng thái là bắt buộc' });
+    }
+    const completedBy = req.user?.username || 'Unknown';
+    const ticket = db.updateItInventoryTicketStatus(id, status, completedBy);
+    if (!ticket) {
+      return res.status(404).json({ error: 'Không tìm thấy phiếu kiểm kê' });
+    }
+    res.json({ success: true, ticket, message: `Đã cập nhật trạng thái phiếu thành ${status}` });
+  } catch (err) {
+    console.error('Error updating IT inventory ticket status:', err);
     res.status(500).json({ error: err.message });
   }
 });
