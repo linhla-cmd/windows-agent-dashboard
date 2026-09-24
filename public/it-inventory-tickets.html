@@ -1,0 +1,1613 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quản lý Phiếu Kiểm kê IT - Windows Agent Dashboard</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      /* Background - Light Blue Pastel */
+      --bg: #E8F4F8;
+      --bg2: #F5FAFC;
+      --bg3: #D4EBF2;
+      
+      /* Card & Panel */
+      --card: #FFFFFF;
+      --card-hover: #F0F8FB;
+      --card-shadow: rgba(0, 0, 0, 0.08);
+      
+      /* Border & Accent */
+      --border: #C5E4ED;
+      --border-light: #DFF0F5;
+      --border-glow: #00A8CC;
+      
+      /* Text Color */
+      --fg: #1C3A47;
+      --fg2: #4A6B7D;
+      --fg3: #7A95A5;
+      
+      /* Accent & Status */
+      --accent: #0078B6;
+      --accent2: #00A8CC;
+      --success: #00A651;
+      --success-glow: #00D980;
+      --warning: #FF9800;
+      --danger: #D32F2F;
+      --info: #0288D1;
+      
+      /* Status Color */
+      --status-online: #4CAF50;
+      --status-offline: #999999;
+      --status-maintenance: #FF9800;
+      
+      /* Font */
+      --font-sans: 'Plus Jakarta Sans', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-sans);
+      background: linear-gradient(135deg, #E8F4F8 0%, #F5FAFC 100%);
+      color: var(--fg);
+      min-height: 100vh;
+      overflow-x: hidden;
+      line-height: 1.5;
+      position: relative;
+      -webkit-font-smoothing: antialiased;
+      zoom: 0.9;
+    }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      position: fixed; top: 0; left: 0;
+      width: 240px; height: 100vh;
+      background: var(--card);
+      border-right: 1px solid var(--border);
+      display: flex; flex-direction: column;
+      z-index: 100;
+      box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+    }
+    .sidebar-logo {
+      padding: 24px;
+      border-bottom: 1px solid var(--border-light);
+      display: flex; flex-direction: column; align-items: center; text-align: center; gap: 12px;
+    }
+    .sidebar-logo .logo-icon {
+      width: 48px; height: 48px;
+      border: 2px solid var(--accent2);
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0, 168, 204, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      background: linear-gradient(135deg, #E3F2FD 0%, #FFFFFF 100%);
+    }
+    .sidebar-logo .logo-text {
+      font-size: 18px; font-weight: 900; color: var(--accent);
+      letter-spacing: 1px; font-family: var(--font-mono);
+    }
+    .sidebar-logo .logo-sub {
+      font-size: 9px; color: var(--fg3); font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
+    }
+    .sidebar-nav { padding: 24px 16px; flex: 1; }
+    .nav-label {
+      font-size: 10px; font-weight: 800; color: var(--fg3);
+      text-transform: uppercase; letter-spacing: 2px;
+      padding: 0 12px; margin-bottom: 12px;
+    }
+    .nav-section-title {
+      font-size: 10px; font-weight: 800; color: var(--fg3);
+      text-transform: uppercase; letter-spacing: 2px;
+      padding: 16px 12px 12px 12px;
+      margin-top: 12px;
+      border-top: 1px solid var(--border-light);
+    }
+    .nav-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px; border-radius: 8px;
+      font-size: 12px; font-weight: 600; color: var(--fg2);
+      cursor: pointer; transition: all 0.2s; margin-bottom: 6px;
+      text-decoration: none; border: 1px solid transparent;
+      text-transform: uppercase; letter-spacing: 1px;
+    }
+    .nav-item:hover { background: var(--bg3); color: var(--accent); }
+    .nav-item.active {
+      background: var(--bg3);
+      color: var(--accent2);
+      border-color: var(--accent2);
+      box-shadow: 0 2px 8px rgba(0, 168, 204, 0.15);
+    }
+    .nav-item .nav-icon { font-size: 16px; width: 24px; text-align: center; }
+    .sidebar-footer {
+      padding: 16px;
+      border-top: 1px solid var(--border-light);
+    }
+    .connection-badge {
+      display: flex; align-items: center; gap: 8px; justify-content: center;
+      padding: 10px; background: rgba(0, 166, 81, 0.1); border: 1px solid rgba(0, 166, 81, 0.3); border-radius: 8px;
+      font-size: 10px; color: var(--success); font-family: var(--font-mono); font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
+    }
+    .connection-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--success-glow);
+      box-shadow: 0 0 6px var(--success-glow);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+    /* ── MAIN CONTENT ── */
+    .main {
+      margin-left: 240px;
+      width: calc(100% - 240px);
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+    }
+
+    /* ── TOPBAR ── */
+    .topbar {
+      background: var(--card);
+      border-bottom: 1px solid var(--border-light);
+      padding: 16px 32px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 50;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    .topbar-left h1 {
+      font-size: 20px; font-weight: 900; color: var(--fg);
+      text-transform: uppercase; letter-spacing: 2px; font-family: var(--font-mono);
+      display: flex; align-items: center; gap: 10px;
+    }
+    .topbar-left h1::before {
+      content: '📋'; font-size: 24px;
+    }
+    .topbar-left p {
+      font-size: 11px; color: var(--accent2); margin-top: 4px; font-family: var(--font-mono);
+    }
+    .topbar-right { display: flex; align-items: center; gap: 16px; }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 8px 16px; border-radius: 8px; font-size: 11px; font-weight: 700;
+      border: 1px solid var(--border); background: var(--bg2); color: var(--fg);
+      cursor: pointer; transition: all 0.2s; text-transform: uppercase; letter-spacing: 1px;
+    }
+    .btn:hover { 
+      background: var(--card-hover); 
+      color: var(--accent2); 
+      border-color: var(--accent2); 
+      box-shadow: 0 2px 8px rgba(0, 168, 204, 0.2); 
+    }
+    .btn-primary {
+      background: var(--accent2); color: #FFFFFF; border-color: var(--accent2);
+      box-shadow: 0 2px 8px rgba(0, 168, 204, 0.25);
+    }
+    .btn-primary:hover {
+      background: var(--accent); color: #FFFFFF; 
+      box-shadow: 0 4px 12px rgba(0, 168, 204, 0.35);
+      transform: translateY(-1px);
+    }
+    .btn-secondary {
+      background: var(--card); color: var(--fg2); border: 1px solid var(--border);
+    }
+    .btn-secondary:hover {
+      background: var(--bg3); color: var(--accent2); border-color: var(--accent2);
+    }
+    .btn-danger {
+      background: rgba(211, 47, 47, 0.1); color: var(--danger); border-color: rgba(211, 47, 47, 0.3);
+    }
+    .btn-danger:hover {
+      background: var(--danger); color: #FFFFFF; 
+      box-shadow: 0 2px 8px rgba(211, 47, 47, 0.3);
+    }
+    .btn-small {
+      padding: 6px 12px;
+      font-size: 12px;
+    }
+
+    /* ── STAT CARDS ── */
+    .stats-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 24px; padding: 32px; margin-bottom: 0;
+      width: 100%;
+    }
+    .stat-card {
+      background: var(--card);
+      border: 1px solid var(--border-light);
+      border-radius: 12px; padding: 20px;
+      display: flex; align-items: center; gap: 20px;
+      transition: all 0.3s;
+      cursor: pointer;
+      user-select: none;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 2px 8px var(--card-shadow);
+    }
+    .stat-card:hover { 
+      border-color: var(--accent2); 
+      transform: translateY(-3px); 
+      box-shadow: 0 8px 20px rgba(0, 168, 204, 0.15); 
+    }
+    .stat-icon {
+      width: 56px; height: 56px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 28px; flex-shrink: 0; 
+    }
+    .stat-icon.blue  { 
+      background: rgba(0, 168, 204, 0.15); 
+      color: var(--accent2); 
+      border: 1px solid rgba(0, 168, 204, 0.3);
+    }
+    .stat-icon.green { 
+      background: rgba(0, 166, 81, 0.15); 
+      color: var(--success); 
+      border: 1px solid rgba(0, 166, 81, 0.3);
+    }
+    .stat-icon.red   { 
+      background: rgba(211, 47, 47, 0.15); 
+      color: var(--danger); 
+      border: 1px solid rgba(211, 47, 47, 0.3);
+    }
+    .stat-icon.purple{ 
+      background: rgba(255, 152, 0, 0.15); 
+      color: var(--warning); 
+      border: 1px solid rgba(255, 152, 0, 0.3);
+    }
+    .stat-info { display: flex; flex-direction: column; }
+    .stat-value {
+      font-size: 36px; font-weight: 900; line-height: 1; color: var(--fg); font-family: var(--font-mono);
+    }
+    .stat-label {
+      font-size: 10px; font-weight: 800; margin-top: 8px;
+      text-transform: uppercase; letter-spacing: 2px; color: var(--fg3);
+    }
+
+    /* ── TABLE ── */
+    .table-section {
+      padding: 32px;
+      overflow-x: auto;
+      width: 100%;
+      flex: 1;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--card);
+      border: 1px solid var(--border-light);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px var(--card-shadow);
+    }
+
+    thead {
+      background: linear-gradient(180deg, #E3F2FD 0%, #D1E7F5 100%);
+      font-weight: 700;
+      color: var(--fg);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-family: var(--font-mono);
+    }
+
+    th {
+      padding: 14px 16px;
+      text-align: left;
+      border-bottom: 2px solid var(--border);
+      color: var(--fg);
+    }
+
+    td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border-light);
+      font-size: 12px;
+      color: var(--fg2);
+    }
+
+    tbody tr {
+      background: var(--card);
+      transition: background 0.2s;
+    }
+
+    tbody tr:hover {
+      background: var(--card-hover);
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-family: var(--font-mono);
+    }
+
+    .ticket-status {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-family: var(--font-mono);
+    }
+    .ticket-status.open {
+      background: rgba(0, 188, 212, 0.15);
+      color: #00ACC1;
+      border: 1px solid rgba(0, 188, 212, 0.3);
+    }
+    .ticket-status.in-progress {
+      background: rgba(76, 175, 80, 0.15);
+      color: #43A047;
+      border: 1px solid rgba(76, 175, 80, 0.3);
+    }
+    .ticket-status.completed {
+      background: rgba(158, 158, 158, 0.15);
+      color: #757575;
+      border: 1px solid rgba(158, 158, 158, 0.3);
+    }
+    .ticket-status.cancelled {
+      background: rgba(211, 47, 47, 0.15);
+      color: #D32F2F;
+      border: 1px solid rgba(211, 47, 47, 0.3);
+    }
+
+    .actions {
+      display: flex;
+      gap: 6px;
+    }
+
+    .btn-icon {
+      background: rgba(0, 168, 204, 0.1);
+      color: var(--accent2);
+      border: 1px solid rgba(0, 168, 204, 0.3);
+      padding: 6px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s;
+      position: relative;
+    }
+
+    .btn-icon:hover {
+      background: var(--accent2);
+      color: #FFFFFF;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(0, 168, 204, 0.25);
+    }
+
+    .btn-icon.btn-danger-icon {
+      background: rgba(211, 47, 47, 0.1);
+      color: var(--danger);
+      border-color: rgba(211, 47, 47, 0.3);
+    }
+
+    .btn-icon.btn-danger-icon:hover {
+      background: var(--danger);
+      color: #FFFFFF;
+      box-shadow: 0 4px 8px rgba(211, 47, 47, 0.25);
+    }
+
+    /* Progress bar */
+    .progress-bar-container {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .progress-bar {
+      flex: 1;
+      height: 8px;
+      background: var(--bg3);
+      border-radius: 999px;
+      overflow: hidden;
+      min-width: 80px;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      border-radius: 999px;
+      transition: width 0.4s ease;
+    }
+    .progress-bar-fill.high {
+      background: linear-gradient(90deg, #43A047, #66BB6A);
+    }
+    .progress-bar-fill.medium {
+      background: linear-gradient(90deg, #FB8C00, #FFA726);
+    }
+    .progress-bar-fill.low {
+      background: linear-gradient(90deg, #E53935, #EF5350);
+    }
+    .progress-text {
+      font-size: 11px;
+      font-weight: 700;
+      font-family: var(--font-mono);
+      color: var(--fg2);
+      white-space: nowrap;
+    }
+
+    /* ── CONFIRM MODAL ── */
+    .confirm-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(8px);
+      z-index: 1100;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .confirm-modal.active {
+      display: flex;
+    }
+
+    .confirm-content {
+      background: var(--card);
+      border: 1px solid var(--border-light);
+      border-radius: 16px;
+      padding: 30px;
+      max-width: 500px;
+      width: 90%;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+      position: relative;
+    }
+
+    .confirm-content::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: var(--danger);
+      border-radius: 16px 16px 0 0;
+    }
+
+    .confirm-header {
+      font-size: 16px;
+      font-weight: 800;
+      margin-bottom: 15px;
+      color: var(--danger);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      font-family: var(--font-mono);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .confirm-body {
+      font-size: 13px;
+      color: var(--fg2);
+      margin-bottom: 25px;
+      line-height: 1.6;
+    }
+
+    .confirm-footer {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+
+    /* ── QR MODAL ── */
+    .qr-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(8px);
+      z-index: 1100;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .qr-modal.active {
+      display: flex;
+    }
+
+    .qr-content {
+      background: var(--card);
+      border: 1px solid var(--border-light);
+      border-radius: 16px;
+      padding: 30px;
+      max-width: 700px;
+      width: 90%;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+      position: relative;
+    }
+
+    .qr-content::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: var(--accent2);
+      border-radius: 16px 16px 0 0;
+    }
+
+    .qr-header {
+      font-size: 16px;
+      font-weight: 800;
+      margin-bottom: 20px;
+      color: var(--accent2);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      font-family: var(--font-mono);
+      border-bottom: 1px solid var(--border-light);
+      padding-bottom: 12px;
+    }
+
+    .qr-body {
+      display: flex;
+      gap: 30px;
+      align-items: flex-start;
+    }
+
+    .qr-code-section {
+      flex-shrink: 0;
+    }
+
+    .qr-code-section img {
+      width: 250px;
+      height: 250px;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      padding: 10px;
+      background: white;
+    }
+
+    .qr-info-section {
+      flex: 1;
+    }
+
+    .qr-info-item {
+      margin-bottom: 12px;
+      font-size: 12px;
+    }
+
+    .qr-info-item label {
+      display: block;
+      font-size: 10px;
+      color: var(--fg3);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+    }
+
+    .qr-info-item span {
+      color: var(--fg);
+      font-weight: 600;
+      font-family: var(--font-mono);
+    }
+
+    .qr-footer {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-top: 25px;
+      padding-top: 15px;
+      border-top: 1px solid var(--border-light);
+    }
+
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      .qr-modal.active,
+      .qr-modal.active * {
+        visibility: visible;
+      }
+      .qr-modal.active {
+        position: absolute;
+        left: 0;
+        top: 0;
+        background: white;
+      }
+      .qr-footer {
+        display: none !important;
+      }
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--fg3);
+    }
+
+    .empty-state p {
+      margin-bottom: 20px;
+    }
+
+    /* ── MODAL ── */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(8px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: var(--card);
+      border: 1px solid var(--border-light);
+      border-radius: 16px;
+      padding: 30px;
+      max-width: 600px;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+      position: relative;
+    }
+
+    .modal-wide .modal-content {
+      max-width: 950px;
+    }
+
+    .modal-content::before {
+      content: ''; 
+      position: absolute; 
+      top: 0; 
+      left: 0; 
+      right: 0; 
+      height: 4px;
+      background: var(--accent2);
+      border-radius: 16px 16px 0 0;
+    }
+
+    .modal-header {
+      font-size: 16px;
+      font-weight: 800;
+      margin-bottom: 20px;
+      color: var(--accent2);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      font-family: var(--font-mono);
+      border-bottom: 1px solid var(--border-light);
+      padding-bottom: 12px;
+    }
+
+    .modal-form {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group label {
+      font-size: 11px;
+      color: var(--fg2);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      padding: 10px 12px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--fg);
+      font-size: 12px;
+      font-family: var(--font-sans);
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      border-color: var(--accent2);
+      box-shadow: 0 0 0 3px rgba(0, 168, 204, 0.1);
+    }
+
+    .form-group textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+
+    .modal-footer {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-top: 20px;
+      padding-top: 15px;
+      border-top: 1px solid var(--border-light);
+    }
+
+    .modal-footer button {
+      padding: 8px 18px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .modal-footer .btn-cancel {
+      background: var(--bg2);
+      color: var(--fg2);
+      border: 1px solid var(--border);
+    }
+
+    .modal-footer .btn-cancel:hover {
+      background: var(--bg3);
+      color: var(--fg);
+    }
+
+    .modal-footer .btn-submit {
+      background: var(--accent2);
+      color: #FFFFFF;
+      border: 1px solid var(--accent2);
+      box-shadow: 0 2px 8px rgba(0, 168, 204, 0.25);
+    }
+
+    .modal-footer .btn-submit:hover {
+      background: var(--accent);
+      box-shadow: 0 4px 12px rgba(0, 168, 204, 0.35);
+    }
+
+    /* ── TOAST ── */
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--card);
+      border: 1px solid var(--border-light);
+      border-left: 4px solid var(--accent2);
+      color: var(--fg);
+      padding: 12px 18px;
+      border-radius: 8px;
+      z-index: 2000;
+      animation: slideIn 0.3s ease;
+      max-width: 400px;
+      font-size: 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    }
+
+    .toast.success {
+      border-left-color: var(--success);
+    }
+
+    .toast.error {
+      border-left-color: var(--danger);
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(400px);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    /* ── LOADING ── */
+    .loading {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border: 2px solid var(--accent2);
+      border-radius: 50%;
+      border-top-color: transparent;
+      animation: spin 0.6s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .ticket-detail-header {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 20px;
+      padding: 16px;
+      background: var(--bg2);
+      border-radius: 10px;
+      border: 1px solid var(--border-light);
+    }
+    .ticket-detail-header .detail-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .ticket-detail-header .detail-item label {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--fg3);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-family: var(--font-mono);
+    }
+    .ticket-detail-header .detail-item span {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--fg);
+    }
+    .ticket-detail-stats {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .ticket-detail-stats .mini-stat {
+      flex: 1;
+      min-width: 100px;
+      background: var(--bg2);
+      border: 1px solid var(--border-light);
+      border-radius: 10px;
+      padding: 12px 16px;
+      text-align: center;
+    }
+    .mini-stat .mini-stat-value {
+      font-size: 24px;
+      font-weight: 900;
+      font-family: var(--font-mono);
+      color: var(--fg);
+    }
+    .mini-stat .mini-stat-label {
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--fg3);
+      margin-top: 4px;
+    }
+    .mini-stat.total { border-top: 3px solid var(--accent2); }
+    .mini-stat.scanned { border-top: 3px solid var(--success); }
+    .mini-stat.pending { border-top: 3px solid var(--warning); }
+    .mini-stat.missing { border-top: 3px solid var(--danger); }
+
+    .ticket-devices-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--card);
+      border: 1px solid var(--border-light);
+      border-radius: 10px;
+      overflow: hidden;
+      font-size: 11px;
+    }
+    .ticket-devices-table thead {
+      background: linear-gradient(180deg, #E3F2FD 0%, #D1E7F5 100%);
+    }
+    .ticket-devices-table th {
+      padding: 10px 12px;
+      text-align: left;
+      border-bottom: 2px solid var(--border);
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--fg);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-family: var(--font-mono);
+    }
+    .ticket-devices-table td {
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border-light);
+      color: var(--fg2);
+    }
+    .ticket-devices-table tbody tr:hover { background: var(--card-hover); }
+
+    .scan-status {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-family: var(--font-mono);
+    }
+    .scan-status.pending {
+      background: rgba(255, 152, 0, 0.15);
+      color: #F57C00;
+      border: 1px solid rgba(255, 152, 0, 0.3);
+    }
+    .scan-status.scanned {
+      background: rgba(76, 175, 80, 0.15);
+      color: #43A047;
+      border: 1px solid rgba(76, 175, 80, 0.3);
+    }
+    .scan-status.missing {
+      background: rgba(211, 47, 47, 0.15);
+      color: #D32F2F;
+      border: 1px solid rgba(211, 47, 47, 0.3);
+    }
+    .scan-status.abnormal {
+      background: rgba(156, 39, 176, 0.15);
+      color: #8E24AA;
+      border: 1px solid rgba(156, 39, 176, 0.3);
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 1200px) {
+      .stats-container {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 1024px) {
+      .sidebar {
+        width: 220px;
+      }
+      .main {
+        margin-left: 220px;
+      }
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      body {
+        zoom: 1;
+      }
+      .sidebar {
+        width: 200px;
+      }
+      .main {
+        margin-left: 200px;
+      }
+      .topbar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+      }
+      .stats-container {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <div class="logo-icon">🪟</div>
+        <div>
+          <div class="logo-text">Windows Agent</div>
+          <div class="logo-sub">Collector Dashboard</div>
+        </div>
+      </div>
+      
+      <div class="sidebar-nav">
+        <div class="nav-label">Main Menu</div>
+        <a href="/dashboard.html" class="nav-item">
+          <span class="nav-icon">📊</span>
+          <span>Dashboard</span>
+        </a>
+        <a href="/it-devices.html" class="nav-item">
+          <span class="nav-icon">🖥️</span>
+          <span>Thiết bị IT</span>
+        </a>
+        <a href="/audit-scan.html" class="nav-item">
+          <span class="nav-icon">📋</span>
+          <span>Kiểm kê Tài sản</span>
+        </a>
+        <a href="/scan.html" class="nav-item">
+          <span class="nav-icon">📜</span>
+          <span>Lịch sử quét</span>
+        </a>
+
+        <div class="nav-section-title">Quản lý Phiếu</div>
+        <a class="nav-item" onclick="openCreateTicketModal()">
+          <span class="nav-icon">📋</span>
+          <span>Tạo Phiếu Kiểm kê</span>
+        </a>
+        <a href="/it-inventory-tickets.html" class="nav-item active">
+          <span class="nav-icon">📊</span>
+          <span>Danh sách Phiếu</span>
+        </a>
+      </div>
+
+      <div class="sidebar-footer">
+        <div class="connection-badge">
+          <span class="connection-dot"></span>
+          <span>System Online</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main">
+      <!-- Topbar -->
+      <div class="topbar">
+        <div class="topbar-left">
+          <h1>Quản lý Phiếu Kiểm kê IT</h1>
+          <p>Inventory Ticket Management & Scanning</p>
+        </div>
+        <div class="topbar-right">
+          <button class="btn btn-primary" onclick="openCreateTicketModal()">
+            📋 Tạo Phiếu Kiểm kê
+          </button>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-container" id="statsContainer">
+        <div class="stat-card">
+          <div class="stat-icon blue">📋</div>
+          <div class="stat-info">
+            <div class="stat-value" id="totalTickets">0</div>
+            <div class="stat-label">Tổng phiếu</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon green">🔓</div>
+          <div class="stat-info">
+            <div class="stat-value" id="openTickets">0</div>
+            <div class="stat-label">Đang mở</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon green">✅</div>
+          <div class="stat-info">
+            <div class="stat-value" id="completedTickets">0</div>
+            <div class="stat-label">Hoàn thành</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon red">❌</div>
+          <div class="stat-info">
+            <div class="stat-value" id="cancelledTickets">0</div>
+            <div class="stat-label">Đã hủy</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="table-section">
+        <table id="ticketsTable">
+          <thead>
+            <tr>
+              <th>Mã phiếu</th>
+              <th>Tiêu đề</th>
+              <th>Phạm vi</th>
+              <th>Trạng thái</th>
+              <th>Tiến độ</th>
+              <th>Ngày tạo</th>
+              <th>Người tạo</th>
+              <th>Hành động</th>
+            </tr>
+          </thead>
+          <tbody id="ticketsBody">
+            <tr>
+              <td colspan="8" style="text-align: center; padding: 40px; color: var(--fg3);">
+                <div class="loading" style="display: inline-block;"></div> Đang tải phiếu kiểm kê...
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+  <!-- Create Inventory Ticket Modal -->
+  <div class="modal" id="createInventoryTicketModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span>📋 Tạo Phiếu Kiểm kê IT</span>
+        <button class="modal-close" style="position:absolute;top:16px;right:20px;background:none;border:none;font-size:18px;cursor:pointer;color:var(--fg3);" onclick="closeCreateTicketModal()">✕</button>
+      </div>
+      <div class="modal-form">
+        <form id="createTicketForm">
+          <div class="form-group">
+            <label>Tiêu đề phiếu kiểm kê *</label>
+            <input type="text" id="ticketTitle" required placeholder="Ví dụ: Kiểm kê IT Q3/2026" />
+          </div>
+          <div class="form-group">
+            <label>Phạm vi kiểm kê</label>
+            <select id="ticketScope" onchange="onTicketScopeChange()">
+              <option value="all">Toàn bộ thiết bị IT</option>
+              <option value="department">Theo phòng ban</option>
+              <option value="device_type">Theo loại thiết bị</option>
+            </select>
+          </div>
+          <div class="form-group" id="departmentFilterGroup" style="display:none;">
+            <label>Chọn phòng ban</label>
+            <select id="ticketDepartment">
+              <option value="">-- Chọn phòng ban --</option>
+            </select>
+          </div>
+          <div class="form-group" id="deviceTypeFilterGroup" style="display:none;">
+            <label>Chọn loại thiết bị</label>
+            <select id="ticketDeviceType">
+              <option value="">-- Chọn loại thiết bị --</option>
+              <option value="Laptop">Laptop</option>
+              <option value="PC">PC</option>
+              <option value="Màn hình">Màn hình</option>
+              <option value="Máy in">Máy in</option>
+              <option value="Switch">Switch</option>
+              <option value="Router">Router</option>
+              <option value="Server">Server</option>
+              <option value="Khác">Khác</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Ghi chú</label>
+            <textarea id="ticketNotes" rows="3" placeholder="Mô tả mục đích, lưu ý..."></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-cancel" onclick="closeCreateTicketModal()">Hủy</button>
+        <button type="button" class="btn-submit" onclick="submitCreateTicket()">Tạo phiếu</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ticket Detail Modal -->
+  <div class="modal modal-wide" id="ticketDetailModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span id="ticketDetailTitle">Chi tiết Phiếu Kiểm kê</span>
+        <button class="modal-close" style="position:absolute;top:16px;right:20px;background:none;border:none;font-size:18px;cursor:pointer;color:var(--fg3);" onclick="closeTicketDetailModal()">✕</button>
+      </div>
+      <div id="ticketDetailContent">
+        <div style="text-align:center;padding:40px;"><div class="loading" style="display:inline-block;"></div> Đang tải...</div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-cancel" onclick="closeTicketDetailModal()">Đóng</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ticket QR Modal -->
+  <div class="qr-modal" id="ticketQrModal">
+    <div class="qr-content">
+      <div class="qr-header" id="ticketQrTitle">Mã QR Phiếu Kiểm kê</div>
+      <div class="qr-body">
+        <div class="qr-code-section">
+          <img id="ticketQrImage" src="" alt="Mã QR Phiếu" />
+        </div>
+        <div class="qr-info-section">
+          <div class="qr-info-item">
+            <label>Mã phiếu</label>
+            <span id="ticketQrCode">-</span>
+          </div>
+          <div class="qr-info-item">
+            <label>Tiêu đề</label>
+            <span id="ticketQrTitleInfo">-</span>
+          </div>
+          <div class="qr-info-item">
+            <label>Phạm vi</label>
+            <span id="ticketQrScope">-</span>
+          </div>
+          <div class="qr-info-item">
+            <label>Trạng thái</label>
+            <span id="ticketQrStatus">-</span>
+          </div>
+        </div>
+      </div>
+      <div class="qr-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeTicketQrModal()">Đóng</button>
+        <button type="button" class="btn btn-secondary" id="downloadTicketQrBtn">💾 Tải QR</button>
+        <button type="button" class="btn btn-primary" onclick="printQR()">🖨️ In QR</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirm Ticket Action Modal -->
+  <div class="confirm-modal" id="ticketActionConfirmModal">
+    <div class="confirm-content">
+      <div class="confirm-header">
+        <span id="ticketActionConfirmIcon">⚠️</span> <span id="ticketActionConfirmTitle">Xác nhận</span>
+      </div>
+      <div class="confirm-body" id="ticketActionConfirmMessage">
+        Bạn có chắc chắn?
+      </div>
+      <div class="confirm-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeTicketActionModal()">Hủy</button>
+        <button type="button" class="btn btn-primary" id="ticketActionConfirmBtn">Xác nhận</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentTickets = [];
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      loadInventoryTickets();
+      loadTicketStats();
+      
+      // Check if ?action=create in URL
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('action') === 'create') {
+        openCreateTicketModal();
+      }
+    });
+
+    async function loadInventoryTickets() {
+      const tbody = document.getElementById('ticketsBody');
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:40px;"><div class="loading" style="display:inline-block;"></div> Đang tải...</td></tr>';
+      try {
+        const res = await fetch('/api/it-inventory/tickets');
+        if (!res.ok) throw new Error('Failed to load tickets');
+        const data = await res.json();
+        currentTickets = data.tickets || [];
+        renderTicketsTable(currentTickets);
+      } catch (error) {
+        console.error('Error loading tickets:', error);
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--fg3);">Lỗi khi tải phiếu kiểm kê</td></tr>';
+      }
+    }
+
+    async function loadTicketStats() {
+      try {
+        const res = await fetch('/api/it-inventory/tickets');
+        if (!res.ok) throw new Error('Failed to load stats');
+        const data = await res.json();
+        const tickets = data.tickets || [];
+        
+        document.getElementById('totalTickets').textContent = tickets.length;
+        document.getElementById('openTickets').textContent = tickets.filter(t => t.status === 'Open').length;
+        document.getElementById('completedTickets').textContent = tickets.filter(t => t.status === 'Completed').length;
+        document.getElementById('cancelledTickets').textContent = tickets.filter(t => t.status === 'Cancelled').length;
+      } catch (error) {
+        console.error('Error loading ticket stats:', error);
+      }
+    }
+
+    function renderTicketsTable(tickets) {
+      const tbody = document.getElementById('ticketsBody');
+      if (!tickets || tickets.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--fg3);">Chưa có phiếu kiểm kê nào</td></tr>';
+        return;
+      }
+      tbody.innerHTML = tickets.map(t => {
+        const scanned = t.scanned_count || 0;
+        const total = t.total_count || 0;
+        const pct = total > 0 ? Math.round((scanned / total) * 100) : 0;
+        const barClass = pct >= 70 ? 'high' : pct >= 30 ? 'medium' : 'low';
+        const scopeLabel = t.scope === 'all' ? 'Toàn bộ' : t.scope === 'department' ? ('Phòng ban: ' + escapeHtml(t.department || '')) : ('Loại: ' + escapeHtml(t.device_type || ''));
+        const statusClass = (t.status || 'Open').toLowerCase().replace(/\s+/g, '-');
+        const statusLabel = t.status || 'Open';
+        const createdAt = t.created_at ? new Date(t.created_at).toLocaleDateString('vi-VN') : '-';
+
+        return `<tr>
+          <td><strong>${escapeHtml(t.ticket_code || '-')}</strong></td>
+          <td>${escapeHtml(t.title || '-')}</td>
+          <td>${scopeLabel}</td>
+          <td><span class="ticket-status ${statusClass}">${statusLabel}</span></td>
+          <td>
+            <div class="progress-bar-container">
+              <div class="progress-bar"><div class="progress-bar-fill ${barClass}" style="width:${pct}%"></div></div>
+              <span class="progress-text">${scanned}/${total} (${pct}%)</span>
+            </div>
+          </td>
+          <td>${createdAt}</td>
+          <td>${escapeHtml(t.created_by || '-')}</td>
+          <td>
+            <div class="actions">
+              <button class="btn-icon" title="Xem chi tiết" onclick="viewTicketDetail(${t.id})">👁️</button>
+              <button class="btn-icon" title="Mã QR Phiếu" onclick="showTicketQR(${t.id})">📱</button>
+              ${statusLabel !== 'Completed' && statusLabel !== 'Cancelled' ? `<button class="btn-icon" title="Hoàn thành" onclick="confirmTicketAction(${t.id}, 'complete')">✅</button>` : ''}
+              ${statusLabel !== 'Cancelled' && statusLabel !== 'Completed' ? `<button class="btn-icon btn-danger-icon" title="Hủy phiếu" onclick="confirmTicketAction(${t.id}, 'cancel')">❌</button>` : ''}
+            </div>
+          </td>
+        </tr>`;
+      }).join('');
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function openCreateTicketModal() {
+      document.getElementById('ticketTitle').value = '';
+      document.getElementById('ticketScope').value = 'all';
+      document.getElementById('ticketNotes').value = '';
+      document.getElementById('departmentFilterGroup').style.display = 'none';
+      document.getElementById('deviceTypeFilterGroup').style.display = 'none';
+      populateTicketDepartments();
+      document.getElementById('createInventoryTicketModal').classList.add('active');
+    }
+
+    function closeCreateTicketModal() {
+      document.getElementById('createInventoryTicketModal').classList.remove('active');
+    }
+
+    function onTicketScopeChange() {
+      const scope = document.getElementById('ticketScope').value;
+      document.getElementById('departmentFilterGroup').style.display = scope === 'department' ? 'block' : 'none';
+      document.getElementById('deviceTypeFilterGroup').style.display = scope === 'device_type' ? 'block' : 'none';
+    }
+
+    async function populateTicketDepartments() {
+      try {
+        const response = await fetch('/api/it-devices');
+        if (!response.ok) return;
+        const data = await response.json();
+        const departments = [...new Set((data.devices || []).map(d => d.department).filter(Boolean))];
+        const select = document.getElementById('ticketDepartment');
+        select.innerHTML = '<option value="">-- Chọn phòng ban --</option>';
+        departments.forEach(dept => {
+          const option = document.createElement('option');
+          option.value = dept;
+          option.textContent = dept;
+          select.appendChild(option);
+        });
+      } catch (e) {
+        console.error('Error populating departments:', e);
+      }
+    }
+
+    async function submitCreateTicket() {
+      const title = document.getElementById('ticketTitle').value.trim();
+      if (!title) {
+        showToast('Vui lòng nhập tiêu đề phiếu kiểm kê', 'error');
+        return;
+      }
+      const scope = document.getElementById('ticketScope').value;
+      const body = { title, scope, notes: document.getElementById('ticketNotes').value.trim() };
+
+      if (scope === 'department') {
+        const dept = document.getElementById('ticketDepartment').value;
+        if (!dept) { showToast('Vui lòng chọn phòng ban', 'error'); return; }
+        body.department = dept;
+      }
+      if (scope === 'device_type') {
+        const dt = document.getElementById('ticketDeviceType').value;
+        if (!dt) { showToast('Vui lòng chọn loại thiết bị', 'error'); return; }
+        body.device_type = dt;
+      }
+
+      try {
+        const res = await fetch('/api/it-inventory/tickets', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.error || 'Failed to create ticket');
+        }
+        showToast('Tạo phiếu kiểm kê thành công!', 'success');
+        closeCreateTicketModal();
+        loadInventoryTickets();
+        loadTicketStats();
+      } catch (error) {
+        console.error('Error creating ticket:', error);
+        showToast('Lỗi: ' + error.message, 'error');
+      }
+    }
+
+    // ── Ticket Detail ──
+    async function viewTicketDetail(id) {
+      document.getElementById('ticketDetailTitle').textContent = 'Chi tiết Phiếu Kiểm kê';
+      document.getElementById('ticketDetailContent').innerHTML = '<div style="text-align:center;padding:40px;"><div class="loading" style="display:inline-block;"></div> Đang tải...</div>';
+      document.getElementById('ticketDetailModal').classList.add('active');
+
+      try {
+        const res = await fetch(`/api/it-inventory/tickets/${id}`);
+        if (!res.ok) throw new Error('Failed to load ticket detail');
+        const data = await res.json();
+        const t = data.ticket || data;
+        const devices = data.devices || t.devices || [];
+
+        const scanned = devices.filter(d => d.scan_status === 'Scanned').length;
+        const pending = devices.filter(d => !d.scan_status || d.scan_status === 'Pending').length;
+        const missing = devices.filter(d => d.scan_status === 'Missing').length;
+        const abnormal = devices.filter(d => d.scan_status === 'Abnormal').length;
+        const total = devices.length;
+
+        const scopeLabel = t.scope === 'all' ? 'Toàn bộ thiết bị IT' : t.scope === 'department' ? ('Phòng ban: ' + escapeHtml(t.department || '')) : ('Loại thiết bị: ' + escapeHtml(t.device_type || ''));
+
+        document.getElementById('ticketDetailTitle').textContent = `📋 ${t.ticket_code || ''} - ${t.title || 'Chi tiết phiếu'}`;
+
+        let html = `
+          <div class="ticket-detail-header">
+            <div class="detail-item"><label>Mã phiếu</label><span>${escapeHtml(t.ticket_code || '-')}</span></div>
+            <div class="detail-item"><label>Tiêu đề</label><span>${escapeHtml(t.title || '-')}</span></div>
+            <div class="detail-item"><label>Phạm vi</label><span>${scopeLabel}</span></div>
+            <div class="detail-item"><label>Trạng thái</label><span class="ticket-status ${(t.status || 'Open').toLowerCase().replace(/\s+/g, '-')}">${t.status || 'Open'}</span></div>
+            <div class="detail-item"><label>Ngày tạo</label><span>${t.created_at ? new Date(t.created_at).toLocaleString('vi-VN') : '-'}</span></div>
+            <div class="detail-item"><label>Người tạo</label><span>${escapeHtml(t.created_by || '-')}</span></div>
+            ${t.notes ? `<div class="detail-item" style="grid-column:1/-1;"><label>Ghi chú</label><span>${escapeHtml(t.notes)}</span></div>` : ''}
+          </div>
+          <div class="ticket-detail-stats">
+            <div class="mini-stat total"><div class="mini-stat-value">${total}</div><div class="mini-stat-label">Tổng</div></div>
+            <div class="mini-stat scanned"><div class="mini-stat-value">${scanned}</div><div class="mini-stat-label">Đã quét</div></div>
+            <div class="mini-stat pending"><div class="mini-stat-value">${pending}</div><div class="mini-stat-label">Chưa quét</div></div>
+            <div class="mini-stat missing"><div class="mini-stat-value">${missing}</div><div class="mini-stat-label">Thiếu</div></div>
+          </div>
+        `;
+
+        if (devices.length > 0) {
+          html += `<div style="overflow-x:auto;"><table class="ticket-devices-table">
+            <thead><tr>
+              <th>Mã tài sản</th><th>Tên thiết bị</th><th>Loại</th><th>Serial</th>
+              <th>Người dùng</th><th>Phòng ban</th><th>Vị trí</th>
+              <th>Trạng thái quét</th><th>Thời gian quét</th><th>Người quét</th><th>Ghi chú</th>
+            </tr></thead><tbody>`;
+          devices.forEach(d => {
+            const scanClass = (d.scan_status || 'Pending').toLowerCase();
+            const scanLabel = d.scan_status || 'Pending';
+            const scanTime = d.scanned_at ? new Date(d.scanned_at).toLocaleString('vi-VN') : '-';
+            html += `<tr>
+              <td>${escapeHtml(d.asset_code || '-')}</td>
+              <td><strong>${escapeHtml(d.device_name || '-')}</strong></td>
+              <td>${escapeHtml(d.device_type || '-')}</td>
+              <td>${escapeHtml(d.serial_number || '-')}</td>
+              <td>${escapeHtml(d.user_name || '-')}</td>
+              <td>${escapeHtml(d.department || '-')}</td>
+              <td>${escapeHtml(d.location || '-')}</td>
+              <td><span class="scan-status ${scanClass}">${scanLabel}</span></td>
+              <td>${scanTime}</td>
+              <td>${escapeHtml(d.scanned_by || '-')}</td>
+              <td>${escapeHtml(d.scan_notes || '-')}</td>
+            </tr>`;
+          });
+          html += '</tbody></table></div>';
+        } else {
+          html += '<div style="text-align:center;padding:30px;color:var(--fg3);">Không có thiết bị trong phiếu này</div>';
+        }
+
+        document.getElementById('ticketDetailContent').innerHTML = html;
+      } catch (error) {
+        console.error('Error loading ticket detail:', error);
+        document.getElementById('ticketDetailContent').innerHTML = '<div style="text-align:center;padding:40px;color:var(--danger);">Lỗi khi tải chi tiết phiếu kiểm kê</div>';
+      }
+    }
+
+    function closeTicketDetailModal() {
+      document.getElementById('ticketDetailModal').classList.remove('active');
+    }
+
+    // ── Ticket QR ──
+    async function showTicketQR(id) {
+      const ticket = currentTickets.find(t => t.id === id);
+      if (!ticket) return;
+      try {
+        const res = await fetch(`/api/it-inventory/tickets/${id}/qr`);
+        if (!res.ok) throw new Error('Failed to generate ticket QR');
+        const data = await res.json();
+
+        document.getElementById('ticketQrTitle').textContent = `Mã QR - ${ticket.ticket_code || ticket.title}`;
+        document.getElementById('ticketQrImage').src = data.qrDataUrl;
+        document.getElementById('ticketQrCode').textContent = ticket.ticket_code || '-';
+        document.getElementById('ticketQrTitleInfo').textContent = ticket.title || '-';
+        const scopeLabel = ticket.scope === 'all' ? 'Toàn bộ' : ticket.scope === 'department' ? ('Phòng ban: ' + (ticket.department || '')) : ('Loại: ' + (ticket.device_type || ''));
+        document.getElementById('ticketQrScope').textContent = scopeLabel;
+        document.getElementById('ticketQrStatus').textContent = ticket.status || 'Open';
+
+        document.getElementById('downloadTicketQrBtn').onclick = () => {
+          const a = document.createElement('a');
+          a.href = data.qrDataUrl;
+          a.download = `QR_Ticket_${ticket.ticket_code || ticket.id}.png`;
+          a.click();
+        };
+
+        document.getElementById('ticketQrModal').classList.add('active');
+      } catch (error) {
+        console.error('Error generating ticket QR:', error);
+        showToast('Lỗi khi tạo mã QR phiếu', 'error');
+      }
+    }
+
+    function closeTicketQrModal() {
+      document.getElementById('ticketQrModal').classList.remove('active');
+    }
+
+    // ── Ticket Actions (Complete / Cancel) ──
+    function confirmTicketAction(id, action) {
+      const ticket = currentTickets.find(t => t.id === id);
+      if (!ticket) return;
+
+      const modal = document.getElementById('ticketActionConfirmModal');
+      const btn = document.getElementById('ticketActionConfirmBtn');
+
+      if (action === 'complete') {
+        document.getElementById('ticketActionConfirmIcon').textContent = '✅';
+        document.getElementById('ticketActionConfirmTitle').textContent = 'Hoàn thành phiếu kiểm kê';
+        document.getElementById('ticketActionConfirmMessage').textContent = `Bạn có chắc chắn muốn đánh dấu phiếu "${ticket.title}" là hoàn thành?`;
+        btn.className = 'btn btn-primary';
+        btn.textContent = 'Hoàn thành';
+        btn.onclick = () => executeTicketAction(id, 'complete');
+      } else {
+        document.getElementById('ticketActionConfirmIcon').textContent = '❌';
+        document.getElementById('ticketActionConfirmTitle').textContent = 'Hủy phiếu kiểm kê';
+        document.getElementById('ticketActionConfirmMessage').textContent = `Bạn có chắc chắn muốn hủy phiếu "${ticket.title}"? Hành động này không thể hoàn tác.`;
+        btn.className = 'btn btn-danger';
+        btn.textContent = 'Hủy phiếu';
+        btn.onclick = () => executeTicketAction(id, 'cancel');
+      }
+
+      modal.classList.add('active');
+    }
+
+    function closeTicketActionModal() {
+      document.getElementById('ticketActionConfirmModal').classList.remove('active');
+    }
+
+    async function executeTicketAction(id, action) {
+      try {
+        const status = action === 'complete' ? 'Completed' : 'Cancelled';
+        const res = await fetch(`/api/it-inventory/tickets/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status })
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.error || 'Failed to update ticket');
+        }
+        showToast(action === 'complete' ? 'Phiếu đã hoàn thành!' : 'Đã hủy phiếu kiểm kê', 'success');
+        closeTicketActionModal();
+        loadInventoryTickets();
+        loadTicketStats();
+      } catch (error) {
+        console.error('Error updating ticket:', error);
+        showToast('Lỗi: ' + error.message, 'error');
+      }
+    }
+
+    function printQR() {
+      window.print();
+    }
+
+    function showToast(message, type = 'success') {
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      setTimeout(() => {
+        toast.remove();
+      }, 3000);
+    }
+  </script>
+</body>
+</html>

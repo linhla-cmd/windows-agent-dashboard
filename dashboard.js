@@ -1379,7 +1379,7 @@ app.post('/api/it-inventory/tickets/:id/scan', userAuth.verifySessionMiddleware,
   }
 });
 
-app.put('/api/it-inventory/tickets/:id/status', userAuth.verifySessionMiddleware, (req, res) => {
+app.put('/api/it-inventory/tickets/:id', userAuth.verifySessionMiddleware, (req, res) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
@@ -1394,6 +1394,32 @@ app.put('/api/it-inventory/tickets/:id/status', userAuth.verifySessionMiddleware
     res.json({ success: true, ticket, message: `Đã cập nhật trạng thái phiếu thành ${status}` });
   } catch (err) {
     console.error('Error updating IT inventory ticket status:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/it-inventory/tickets/:id/qr', userAuth.verifySessionMiddleware, (req, res) => {
+  try {
+    const { id } = req.params;
+    const ticket = db.getItInventoryTicketById(id);
+    if (!ticket) {
+      return res.status(404).json({ error: 'Không tìm thấy phiếu kiểm kê' });
+    }
+    const QRCode = require('qrcode');
+    const qrData = JSON.stringify({
+      type: 'it_inventory_ticket',
+      ticket_id: ticket.id,
+      ticket_code: ticket.ticket_code
+    });
+    QRCode.toDataURL(qrData, { width: 300, margin: 2 }, (err, url) => {
+      if (err) {
+        console.error('Error generating ticket QR:', err);
+        return res.status(500).json({ error: 'Lỗi tạo mã QR' });
+      }
+      res.json({ success: true, qrDataUrl: url });
+    });
+  } catch (err) {
+    console.error('Error generating ticket QR:', err);
     res.status(500).json({ error: err.message });
   }
 });
