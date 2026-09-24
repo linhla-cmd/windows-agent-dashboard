@@ -1224,6 +1224,16 @@
           <span class="nav-icon">📜</span>
           <span>Lịch sử quét</span>
         </a>
+
+        <div class="nav-label" style="margin-top: 20px; border-top: 1px solid var(--border-light); padding-top: 16px;">Phiếu Kiểm kê</div>
+        <a class="nav-item" onclick="openCreateTicketModal()">
+          <span class="nav-icon">📋</span>
+          <span>Tạo Phiếu Kiểm kê</span>
+        </a>
+        <a class="nav-item" onclick="document.getElementById('inventoryTicketsSection').scrollIntoView({behavior: 'smooth'})">
+          <span class="nav-icon">📊</span>
+          <span>Danh sách Phiếu</span>
+        </a>
       </div>
 
       <div class="sidebar-footer">
@@ -1243,9 +1253,6 @@
           <p>Inventory &amp; Asset Lifecycle Management</p>
         </div>
         <div class="topbar-right">
-          <button class="btn btn-secondary" onclick="openCreateTicketModal()">
-            📋 Tạo Phiếu Kiểm kê IT
-          </button>
           <button class="btn btn-primary" onclick="openAddModal()">
             + Thêm thiết bị
           </button>
