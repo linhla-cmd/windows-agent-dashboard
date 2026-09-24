@@ -1534,18 +1534,18 @@
         currentQrData = data;
 
         document.getElementById('qrModalTitle').textContent = `Mã QR - ${device.device_name}`;
-        document.getElementById('qrImage').src = data.qrCodeDataUrl;
+        document.getElementById('qrImage').src = data.qrDataUrl;
         document.getElementById('qrAssetCode').textContent = device.asset_code || '-';
         document.getElementById('qrSerialNumber').textContent = device.serial_number || '-';
         document.getElementById('qrModel').textContent = device.model || '-';
         document.getElementById('qrLocation').textContent = device.location || '-';
         document.getElementById('qrUserDept').textContent =
           `${device.user_name || '-'} / ${device.department || '-'}`;
-        document.getElementById('qrPayloadText').textContent = data.payload || '-';
+        document.getElementById('qrPayloadText').textContent = data.qrPayload || '-';
 
         document.getElementById('downloadQrBtn').onclick = () => {
           const a = document.createElement('a');
-          a.href = data.qrCodeDataUrl;
+          a.href = data.qrDataUrl;
           a.download = `QR_${device.asset_code || device.device_name}.png`;
           a.click();
         };
