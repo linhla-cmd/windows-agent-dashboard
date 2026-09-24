@@ -239,12 +239,30 @@ function getDevices() {
            asset_tag, model, department, monitor, printer, peripherals, asset_user, qr_printed, qr_printed_at
     FROM devices
     ORDER BY updated_at DESC
-  `).all().map(row => ({
-    ...row,
-    current_user: row.current_user ? JSON.parse(row.current_user) : null,
-    ipv4: row.ipv4 ? JSON.parse(row.ipv4) : [],
-    is_online: !!row.is_online,
-  }));
+  `).all().map(row => {
+    let parsedUser = null;
+    if (row.current_user) {
+      try {
+        parsedUser = JSON.parse(row.current_user);
+      } catch (e) {
+        parsedUser = { domain: '', username: String(row.current_user) };
+      }
+    }
+    let parsedIpv4 = [];
+    if (row.ipv4) {
+      try {
+        parsedIpv4 = typeof row.ipv4 === 'string' ? JSON.parse(row.ipv4) : row.ipv4;
+      } catch (e) {
+        parsedIpv4 = [{ ip: String(row.ipv4), gateway: '' }];
+      }
+    }
+    return {
+      ...row,
+      current_user: parsedUser,
+      ipv4: Array.isArray(parsedIpv4) ? parsedIpv4 : [],
+      is_online: !!row.is_online,
+    };
+  });
 }
 
 function updateDeviceMetadata(deviceId, metadata = {}) {

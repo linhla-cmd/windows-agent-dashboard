@@ -1,0 +1,188 @@
+<!-- ══════════════════════════════════════════════════════════════════════
+     MODALS: QUẢN LÝ THIẾT BỊ - Bulk Import, Tạo mới, Chỉnh sửa
+     ═══════════════════════════════════════════════════════════════════════ -->
+
+<!-- Modal 1: Bulk Import Excel/CSV -->
+<div id="bulk-import-modal" style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(15,23,42,0.85); backdrop-filter:blur(8px); align-items:center; justify-content:center; padding:16px;">
+  <div style="background:var(--card); border:1px solid var(--border); border-radius:16px; width:100%; max-width:600px; max-height:90vh; display:flex; flex-direction:column; box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+    <div style="padding:20px 24px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+      <div style="display:flex; align-items:center; gap:12px;">
+        <div style="width:38px; height:38px; border-radius:10px; background:rgba(59,130,246,0.15); border:1px solid rgba(59,130,246,0.3); display:flex; align-items:center; justify-content:center; font-size:18px; color:var(--accent);">📥</div>
+        <div>
+          <div style="font-size:16px; font-weight:700; color:var(--fg);">Import Danh sách Thiết bị</div>
+          <div style="font-size:12px; color:var(--fg3); margin-top:2px;">Tải lên file Excel hoặc CSV</div>
+        </div>
+      </div>
+      <button class="btn" onclick="closeBulkImportModal()" style="width:32px; height:32px; padding:0; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:14px; border:1px solid var(--border);">✕</button>
+    </div>
+
+    <div style="padding:24px; overflow-y:auto; flex:1; display:flex; flex-direction:column; gap:16px;">
+      <div style="background:rgba(59,130,246,0.08); border:1px solid rgba(59,130,246,0.2); border-radius:8px; padding:12px; font-size:13px; color:var(--fg2);">
+        <strong style="color:var(--accent);">📋 Hướng dẫn:</strong> Tải template Excel, điền dữ liệu và upload. Hỗ trợ định dạng: .xlsx, .xls, .csv
+      </div>
+
+      <div style="display:flex; gap:10px; align-items:center;">
+        <button class="btn" onclick="downloadDeviceTemplate()" style="flex:1; background:linear-gradient(135deg, #8b5cf6, #7c3aed); color:#fff; font-weight:700; padding:10px 16px;">
+          📥 Tải Template Excel
+        </button>
+        <span style="font-size:12px; color:var(--fg3);">↓ Điền dữ liệu vào file</span>
+      </div>
+
+      <div style="border:2px dashed var(--border); border-radius:10px; padding:20px; text-align:center; background:rgba(0,0,0,0.2);">
+        <input type="file" id="bulk-import-file" accept=".xlsx,.xls,.csv" style="display:none;" onchange="previewBulkImport()">
+        <div id="bulk-import-dropzone" style="cursor:pointer; padding:20px;" onclick="$('#bulk-import-file').click();">
+          <div style="font-size:32px; margin-bottom:8px;">📁</div>
+          <div style="font-weight:600; color:var(--fg); margin-bottom:4px;">Chọn file để tải lên</div>
+          <div style="font-size:12px; color:var(--fg3);">hoặc kéo thả file vào đây</div>
+        </div>
+        <div id="bulk-import-filename" style="font-size:12px; color:var(--success); margin-top:10px; display:none;"></div>
+      </div>
+
+      <div id="bulk-import-result" style="display:none; border:1px solid var(--border); border-radius:8px; padding:16px; background:rgba(0,0,0,0.15);">
+        <div style="font-size:13px; font-weight:600; color:var(--fg); margin-bottom:10px;">📊 Kết quả Import:</div>
+        <div id="bulk-import-result-content"></div>
+      </div>
+    </div>
+
+    <div style="padding:16px 24px; background:rgba(0,0,0,0.15); border-top:1px solid var(--border); display:flex; gap:10px; justify-content:flex-end;">
+      <button class="btn" onclick="closeBulkImportModal()">Đóng</button>
+      <button class="btn btn-primary" id="bulk-import-submit" onclick="submitBulkImport()" style="background:linear-gradient(135deg, #3b82f6, #1d4ed8); color:#fff; font-weight:700;" disabled>
+        📥 Import Ngay
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal 2: Tạo Thiết bị Thủ công -->
+<div id="create-device-modal" style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(15,23,42,0.85); backdrop-filter:blur(8px); align-items:center; justify-content:center; padding:16px;">
+  <div style="background:var(--card); border:1px solid var(--border); border-radius:16px; width:100%; max-width:700px; max-height:90vh; display:flex; flex-direction:column; box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+    <div style="padding:20px 24px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+      <div style="display:flex; align-items:center; gap:12px;">
+        <div style="width:38px; height:38px; border-radius:10px; background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.3); display:flex; align-items:center; justify-content:center; font-size:18px; color:#10b981;">➕</div>
+        <div>
+          <div style="font-size:16px; font-weight:700; color:var(--fg);">Tạo Thiết bị Mới</div>
+          <div style="font-size:12px; color:var(--fg3); margin-top:2px;">Ghi nhận thông tin thiết bị vào hệ thống</div>
+        </div>
+      </div>
+      <button class="btn" onclick="closeCreateDeviceModal()" style="width:32px; height:32px; padding:0; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:14px; border:1px solid var(--border);">✕</button>
+    </div>
+
+    <div style="padding:24px; overflow-y:auto; flex:1; display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:16px;">
+      <div class="admin-form-group" style="grid-column:1 / -1;">
+        <label for="create-device-hostname" style="font-weight:600;">Tên máy tính * <span style="color:var(--fg3); font-weight:400;">VD: PC-IT-001</span></label>
+        <input id="create-device-hostname" type="text" placeholder="Nhập tên máy..." required>
+      </div>
+
+      <div class="admin-form-group">
+        <label for="create-device-ip" style="font-weight:600;">Địa chỉ IP * <span style="color:var(--fg3); font-weight:400;">VD: 192.168.1.100</span></label>
+        <input id="create-device-ip" type="text" placeholder="192.168.x.x" required>
+      </div>
+
+      <div class="admin-form-group">
+        <label for="create-device-asset-tag" style="font-weight:600;">Mã tài sản <span style="color:var(--fg3); font-weight:400;">VD: AST-2024-001</span></label>
+        <input id="create-device-asset-tag" type="text" placeholder="Nhập mã tài sản...">
+      </div>
+
+      <div class="admin-form-group">
+        <label for="create-device-user" style="font-weight:600;">Người sử dụng</label>
+        <input id="create-device-user" type="text" placeholder="Nguyễn Văn A...">
+      </div>
+
+      <div class="admin-form-group">
+        <label for="create-device-department" style="font-weight:600;">Phòng ban / Bộ phận</label>
+        <select id="create-device-department">
+          <option value="">-- Chọn bộ phận --</option>
+          <option value="IT">IT</option>
+          <option value="HR">HR</option>
+          <option value="Finance">Finance</option>
+          <option value="Sales">Sales</option>
+          <option value="Marketing">Marketing</option>
+          <option value="Operations">Operations</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+
+      <div class="admin-form-group">
+        <label for="create-device-model" style="font-weight:600;">Model máy</label>
+        <input id="create-device-model" type="text" placeholder="Dell OptiPlex 7090">
+      </div>
+
+      <div id="create-device-error" style="grid-column:1 / -1; color:var(--error); font-size:13px; padding:10px; background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); border-radius:6px; display:none;"></div>
+    </div>
+
+    <div style="padding:16px 24px; background:rgba(0,0,0,0.15); border-top:1px solid var(--border); display:flex; gap:10px; justify-content:flex-end;">
+      <button class="btn" onclick="closeCreateDeviceModal()">Hủy</button>
+      <button class="btn btn-primary" onclick="submitCreateDevice()" style="background:linear-gradient(135deg, #10b981, #059669); color:#fff; font-weight:700;">
+        ➕ Tạo Thiết bị
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal 3: Chỉnh sửa Thiết bị -->
+<div id="edit-device-modal" style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(15,23,42,0.85); backdrop-filter:blur(8px); align-items:center; justify-content:center; padding:16px;">
+  <div style="background:var(--card); border:1px solid var(--border); border-radius:16px; width:100%; max-width:700px; max-height:90vh; display:flex; flex-direction:column; box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+    <div style="padding:20px 24px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+      <div style="display:flex; align-items:center; gap:12px;">
+        <div style="width:38px; height:38px; border-radius:10px; background:rgba(245,158,11,0.15); border:1px solid rgba(245,158,11,0.3); display:flex; align-items:center; justify-content:center; font-size:18px; color:#f59e0b;">✏️</div>
+        <div>
+          <div style="font-size:16px; font-weight:700; color:var(--fg);">Chỉnh sửa Thiết bị</div>
+          <div style="font-size:12px; color:var(--fg3); margin-top:2px;" id="edit-device-header-id">—</div>
+        </div>
+      </div>
+      <button class="btn" onclick="closeEditDeviceModal()" style="width:32px; height:32px; padding:0; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:14px; border:1px solid var(--border);">✕</button>
+    </div>
+
+    <div style="padding:24px; overflow-y:auto; flex:1; display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:16px;">
+      <input type="hidden" id="edit-device-id">
+
+      <div class="admin-form-group" style="grid-column:1 / -1;">
+        <label for="edit-device-hostname" style="font-weight:600;">Tên máy tính *</label>
+        <input id="edit-device-hostname" type="text" placeholder="Nhập tên máy..." required>
+      </div>
+
+      <div class="admin-form-group">
+        <label for="edit-device-ip" style="font-weight:600;">Địa chỉ IP *</label>
+        <input id="edit-device-ip" type="text" placeholder="192.168.x.x" required>
+      </div>
+
+      <div class="admin-form-group">
+        <label for="edit-device-asset-tag" style="font-weight:600;">Mã tài sản</label>
+        <input id="edit-device-asset-tag" type="text" placeholder="Nhập mã tài sản...">
+      </div>
+
+      <div class="admin-form-group">
+        <label for="edit-device-user" style="font-weight:600;">Người sử dụng</label>
+        <input id="edit-device-user" type="text" placeholder="Họ tên...">
+      </div>
+
+      <div class="admin-form-group">
+        <label for="edit-device-department" style="font-weight:600;">Phòng ban / Bộ phận</label>
+        <select id="edit-device-department">
+          <option value="">-- Chọn bộ phận --</option>
+          <option value="IT">IT</option>
+          <option value="HR">HR</option>
+          <option value="Finance">Finance</option>
+          <option value="Sales">Sales</option>
+          <option value="Marketing">Marketing</option>
+          <option value="Operations">Operations</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+
+      <div class="admin-form-group">
+        <label for="edit-device-model" style="font-weight:600;">Model máy</label>
+        <input id="edit-device-model" type="text" placeholder="Dell OptiPlex 7090">
+      </div>
+
+      <div id="edit-device-error" style="grid-column:1 / -1; color:var(--error); font-size:13px; padding:10px; background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); border-radius:6px; display:none;"></div>
+    </div>
+
+    <div style="padding:16px 24px; background:rgba(0,0,0,0.15); border-top:1px solid var(--border); display:flex; gap:10px; justify-content:flex-end;">
+      <button class="btn" onclick="closeEditDeviceModal()">Hủy</button>
+      <button class="btn btn-primary" onclick="submitEditDevice()" style="background:linear-gradient(135deg, #f59e0b, #d97706); color:#fff; font-weight:700;">
+        💾 Cập nhật Thiết bị
+      </button>
+    </div>
+  </div>
+</div>

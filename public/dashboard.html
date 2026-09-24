@@ -2002,6 +2002,8 @@
               <div class="kiosk-toggle" id="kiosk-container">
                 <button class="kiosk-btn" onclick="toggleKioskMode()" id="btn-kiosk" title="Chế độ Kiosk">🖥️ Kiosk</button>
               </div>
+              <button class="btn" onclick="openCreateDeviceModal()" style="background:linear-gradient(135deg, #10b981, #059669); color:#fff; font-weight:700;" title="Thêm thiết bị mới thủ công">➕ Tạo thiết bị mới</button>
+              <button class="btn" onclick="openBulkImportModal()" style="background:linear-gradient(135deg, #3b82f6, #1d4ed8); color:#fff; font-weight:700;" title="Nhập danh sách thiết bị từ Excel/CSV">📥 Import Excel</button>
               <button class="btn" onclick="exportDevicesExcel()" title="Xuất danh sách đang lọc/tìm kiếm ra Excel">📥 Xuất Excel</button>
               <span id="device-filter-badge" class="badge badge-warn" style="display:none;">Đang lọc: Offline</span>
               <button id="clear-device-filter" class="btn" onclick="clearDeviceFilter()" title="Bỏ bộ lọc trạng thái" style="display:none;">✕ Bỏ lọc</button>
@@ -2471,6 +2473,194 @@
       </div>
 
       <!-- ── TAB 4: QUẢN LÝ NGƯỜI DÙNG (USERS - ADMIN ONLY) ── -->
+<!-- ══════════════════════════════════════════════════════════════════════
+     MODALS: QUẢN LÝ THIẾT BỊ - Bulk Import, Tạo mới, Chỉnh sửa
+     ═══════════════════════════════════════════════════════════════════════ -->
+
+<!-- Modal 1: Bulk Import Excel/CSV -->
+<div id="bulk-import-modal" style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(15,23,42,0.85); backdrop-filter:blur(8px); align-items:center; justify-content:center; padding:16px;">
+  <div style="background:var(--card); border:1px solid var(--border); border-radius:16px; width:100%; max-width:600px; max-height:90vh; display:flex; flex-direction:column; box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+    <div style="padding:20px 24px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+      <div style="display:flex; align-items:center; gap:12px;">
+        <div style="width:38px; height:38px; border-radius:10px; background:rgba(59,130,246,0.15); border:1px solid rgba(59,130,246,0.3); display:flex; align-items:center; justify-content:center; font-size:18px; color:var(--accent);">📥</div>
+        <div>
+          <div style="font-size:16px; font-weight:700; color:var(--fg);">Import Danh sách Thiết bị</div>
+          <div style="font-size:12px; color:var(--fg3); margin-top:2px;">Tải lên file Excel hoặc CSV</div>
+        </div>
+      </div>
+      <button class="btn" onclick="closeBulkImportModal()" style="width:32px; height:32px; padding:0; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:14px; border:1px solid var(--border);">✕</button>
+    </div>
+
+    <div style="padding:24px; overflow-y:auto; flex:1; display:flex; flex-direction:column; gap:16px;">
+      <div style="background:rgba(59,130,246,0.08); border:1px solid rgba(59,130,246,0.2); border-radius:8px; padding:12px; font-size:13px; color:var(--fg2);">
+        <strong style="color:var(--accent);">📋 Hướng dẫn:</strong> Tải template Excel, điền dữ liệu và upload. Hỗ trợ định dạng: .xlsx, .xls, .csv
+      </div>
+
+      <div style="display:flex; gap:10px; align-items:center;">
+        <button class="btn" onclick="downloadDeviceTemplate()" style="flex:1; background:linear-gradient(135deg, #8b5cf6, #7c3aed); color:#fff; font-weight:700; padding:10px 16px;">
+          📥 Tải Template Excel
+        </button>
+        <span style="font-size:12px; color:var(--fg3);">↓ Điền dữ liệu vào file</span>
+      </div>
+
+      <div style="border:2px dashed var(--border); border-radius:10px; padding:20px; text-align:center; background:rgba(0,0,0,0.2);">
+        <input type="file" id="bulk-import-file" accept=".xlsx,.xls,.csv" style="display:none;" onchange="previewBulkImport()">
+        <div id="bulk-import-dropzone" style="cursor:pointer; padding:20px;" onclick="$('#bulk-import-file').click();">
+          <div style="font-size:32px; margin-bottom:8px;">📁</div>
+          <div style="font-weight:600; color:var(--fg); margin-bottom:4px;">Chọn file để tải lên</div>
+          <div style="font-size:12px; color:var(--fg3);">hoặc kéo thả file vào đây</div>
+        </div>
+        <div id="bulk-import-filename" style="font-size:12px; color:var(--success); margin-top:10px; display:none;"></div>
+      </div>
+
+      <div id="bulk-import-result" style="display:none; border:1px solid var(--border); border-radius:8px; padding:16px; background:rgba(0,0,0,0.15);">
+        <div style="font-size:13px; font-weight:600; color:var(--fg); margin-bottom:10px;">📊 Kết quả Import:</div>
+        <div id="bulk-import-result-content"></div>
+      </div>
+    </div>
+
+    <div style="padding:16px 24px; background:rgba(0,0,0,0.15); border-top:1px solid var(--border); display:flex; gap:10px; justify-content:flex-end;">
+      <button class="btn" onclick="closeBulkImportModal()">Đóng</button>
+      <button class="btn btn-primary" id="bulk-import-submit" onclick="submitBulkImport()" style="background:linear-gradient(135deg, #3b82f6, #1d4ed8); color:#fff; font-weight:700;" disabled>
+        📥 Import Ngay
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal 2: Tạo Thiết bị Thủ công -->
+<div id="create-device-modal" style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(15,23,42,0.85); backdrop-filter:blur(8px); align-items:center; justify-content:center; padding:16px;">
+  <div style="background:var(--card); border:1px solid var(--border); border-radius:16px; width:100%; max-width:700px; max-height:90vh; display:flex; flex-direction:column; box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+    <div style="padding:20px 24px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+      <div style="display:flex; align-items:center; gap:12px;">
+        <div style="width:38px; height:38px; border-radius:10px; background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.3); display:flex; align-items:center; justify-content:center; font-size:18px; color:#10b981;">➕</div>
+        <div>
+          <div style="font-size:16px; font-weight:700; color:var(--fg);">Tạo Thiết bị Mới</div>
+          <div style="font-size:12px; color:var(--fg3); margin-top:2px;">Ghi nhận thông tin thiết bị vào hệ thống</div>
+        </div>
+      </div>
+      <button class="btn" onclick="closeCreateDeviceModal()" style="width:32px; height:32px; padding:0; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:14px; border:1px solid var(--border);">✕</button>
+    </div>
+
+    <div style="padding:24px; overflow-y:auto; flex:1; display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:16px;">
+      <div class="admin-form-group" style="grid-column:1 / -1;">
+        <label for="create-device-hostname" style="font-weight:600;">Tên máy tính * <span style="color:var(--fg3); font-weight:400;">VD: PC-IT-001</span></label>
+        <input id="create-device-hostname" type="text" placeholder="Nhập tên máy..." required>
+      </div>
+
+      <div class="admin-form-group">
+        <label for="create-device-ip" style="font-weight:600;">Địa chỉ IP * <span style="color:var(--fg3); font-weight:400;">VD: 192.168.1.100</span></label>
+        <input id="create-device-ip" type="text" placeholder="192.168.x.x" required>
+      </div>
+
+      <div class="admin-form-group">
+        <label for="create-device-asset-tag" style="font-weight:600;">Mã tài sản <span style="color:var(--fg3); font-weight:400;">VD: AST-2024-001</span></label>
+        <input id="create-device-asset-tag" type="text" placeholder="Nhập mã tài sản...">
+      </div>
+
+      <div class="admin-form-group">
+        <label for="create-device-user" style="font-weight:600;">Người sử dụng</label>
+        <input id="create-device-user" type="text" placeholder="Nguyễn Văn A...">
+      </div>
+
+      <div class="admin-form-group">
+        <label for="create-device-department" style="font-weight:600;">Phòng ban / Bộ phận</label>
+        <select id="create-device-department">
+          <option value="">-- Chọn bộ phận --</option>
+          <option value="IT">IT</option>
+          <option value="HR">HR</option>
+          <option value="Finance">Finance</option>
+          <option value="Sales">Sales</option>
+          <option value="Marketing">Marketing</option>
+          <option value="Operations">Operations</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+
+      <div class="admin-form-group">
+        <label for="create-device-model" style="font-weight:600;">Model máy</label>
+        <input id="create-device-model" type="text" placeholder="Dell OptiPlex 7090">
+      </div>
+
+      <div id="create-device-error" style="grid-column:1 / -1; color:var(--error); font-size:13px; padding:10px; background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); border-radius:6px; display:none;"></div>
+    </div>
+
+    <div style="padding:16px 24px; background:rgba(0,0,0,0.15); border-top:1px solid var(--border); display:flex; gap:10px; justify-content:flex-end;">
+      <button class="btn" onclick="closeCreateDeviceModal()">Hủy</button>
+      <button class="btn btn-primary" onclick="submitCreateDevice()" style="background:linear-gradient(135deg, #10b981, #059669); color:#fff; font-weight:700;">
+        ➕ Tạo Thiết bị
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal 3: Chỉnh sửa Thiết bị -->
+<div id="edit-device-modal" style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(15,23,42,0.85); backdrop-filter:blur(8px); align-items:center; justify-content:center; padding:16px;">
+  <div style="background:var(--card); border:1px solid var(--border); border-radius:16px; width:100%; max-width:700px; max-height:90vh; display:flex; flex-direction:column; box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+    <div style="padding:20px 24px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+      <div style="display:flex; align-items:center; gap:12px;">
+        <div style="width:38px; height:38px; border-radius:10px; background:rgba(245,158,11,0.15); border:1px solid rgba(245,158,11,0.3); display:flex; align-items:center; justify-content:center; font-size:18px; color:#f59e0b;">✏️</div>
+        <div>
+          <div style="font-size:16px; font-weight:700; color:var(--fg);">Chỉnh sửa Thiết bị</div>
+          <div style="font-size:12px; color:var(--fg3); margin-top:2px;" id="edit-device-header-id">—</div>
+        </div>
+      </div>
+      <button class="btn" onclick="closeEditDeviceModal()" style="width:32px; height:32px; padding:0; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:14px; border:1px solid var(--border);">✕</button>
+    </div>
+
+    <div style="padding:24px; overflow-y:auto; flex:1; display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:16px;">
+      <input type="hidden" id="edit-device-id">
+
+      <div class="admin-form-group" style="grid-column:1 / -1;">
+        <label for="edit-device-hostname" style="font-weight:600;">Tên máy tính *</label>
+        <input id="edit-device-hostname" type="text" placeholder="Nhập tên máy..." required>
+      </div>
+
+      <div class="admin-form-group">
+        <label for="edit-device-ip" style="font-weight:600;">Địa chỉ IP *</label>
+        <input id="edit-device-ip" type="text" placeholder="192.168.x.x" required>
+      </div>
+
+      <div class="admin-form-group">
+        <label for="edit-device-asset-tag" style="font-weight:600;">Mã tài sản</label>
+        <input id="edit-device-asset-tag" type="text" placeholder="Nhập mã tài sản...">
+      </div>
+
+      <div class="admin-form-group">
+        <label for="edit-device-user" style="font-weight:600;">Người sử dụng</label>
+        <input id="edit-device-user" type="text" placeholder="Họ tên...">
+      </div>
+
+      <div class="admin-form-group">
+        <label for="edit-device-department" style="font-weight:600;">Phòng ban / Bộ phận</label>
+        <select id="edit-device-department">
+          <option value="">-- Chọn bộ phận --</option>
+          <option value="IT">IT</option>
+          <option value="HR">HR</option>
+          <option value="Finance">Finance</option>
+          <option value="Sales">Sales</option>
+          <option value="Marketing">Marketing</option>
+          <option value="Operations">Operations</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+
+      <div class="admin-form-group">
+        <label for="edit-device-model" style="font-weight:600;">Model máy</label>
+        <input id="edit-device-model" type="text" placeholder="Dell OptiPlex 7090">
+      </div>
+
+      <div id="edit-device-error" style="grid-column:1 / -1; color:var(--error); font-size:13px; padding:10px; background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); border-radius:6px; display:none;"></div>
+    </div>
+
+    <div style="padding:16px 24px; background:rgba(0,0,0,0.15); border-top:1px solid var(--border); display:flex; gap:10px; justify-content:flex-end;">
+      <button class="btn" onclick="closeEditDeviceModal()">Hủy</button>
+      <button class="btn btn-primary" onclick="submitEditDevice()" style="background:linear-gradient(135deg, #f59e0b, #d97706); color:#fff; font-weight:700;">
+        💾 Cập nhật Thiết bị
+      </button>
+    </div>
+  </div>
+</div>
       <div id="tab-users" class="tab-view" style="display: none;">
         <div class="admin-grid">
           <div class="card">
@@ -5481,4 +5671,282 @@ Thao tác này sẽ xóa toàn bộ danh sách dữ liệu kiểm kê liên quan
   </div>
 
 </body>
+
+// ==========================================
+// DEVICE MANAGEMENT JS FUNCTIONS
+// ==========================================
+
+// 1. Bulk Import Modal Functions
+function openBulkImportModal() {
+  const canImport = currentUser && (currentUser.role === 'Admin' || currentUser.role === 'ITStaff');
+  if (!canImport) {
+    alert('Bạn không có quyền import danh sách thiết bị. Chỉ Admin và IT Staff mới có quyền.');
+    return;
+  }
+  $('#bulk-import-modal').style.display = 'flex';
+  $('#bulk-import-file').value = '';
+  $('#bulk-import-filename').style.display = 'none';
+  $('#bulk-import-result').style.display = 'none';
+  $('#bulk-import-submit').disabled = true;
+}
+
+function closeBulkImportModal() {
+  $('#bulk-import-modal').style.display = 'none';
+}
+
+function downloadDeviceTemplate() {
+  window.location.href = '/api/devices/template.xlsx';
+}
+
+function previewBulkImport() {
+  const fileInput = $('#bulk-import-file');
+  const filenameEl = $('#bulk-import-filename');
+  const submitBtn = $('#bulk-import-submit');
+
+  if (fileInput.files.length > 0) {
+    const file = fileInput.files[0];
+    filenameEl.textContent = `📄 Đã chọn file: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+    filenameEl.style.display = 'block';
+    submitBtn.disabled = false;
+  } else {
+    filenameEl.style.display = 'none';
+    submitBtn.disabled = true;
+  }
+}
+
+async function submitBulkImport() {
+  const fileInput = $('#bulk-import-file');
+  const submitBtn = $('#bulk-import-submit');
+  const resultDiv = $('#bulk-import-result');
+  const resultContent = $('#bulk-import-result-content');
+
+  if (!fileInput.files.length) {
+    alert('Vui lòng chọn file Excel hoặc CSV');
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append('file', fileInput.files[0]);
+
+  submitBtn.disabled = true;
+  submitBtn.textContent = '⏳ Đang xử lý...';
+  resultDiv.style.display = 'block';
+  resultContent.innerHTML = '<div style="color:var(--accent);">⏳ Đang đọc dữ liệu và xử lý import...</div>';
+
+  try {
+    const res = await fetch('/api/devices/bulk-import', {
+      method: 'POST',
+      body: formData
+    });
+
+    const data = await res.json();
+    if (!res.ok || !data.success) {
+      throw new Error(data.error || 'Import thất bại');
+    }
+
+    let html = `
+      <div style="color:var(--success); font-weight:700; margin-bottom:8px;">
+        ✅ Đã hoàn tất import! Thành công: ${data.imported} thiết bị, Lỗi: ${data.errors}
+      </div>
+    `;
+
+    if (data.results && data.results.length > 0) {
+      html += '<div style="font-size:12px; max-height:150px; overflow-y:auto; margin-bottom:8px;">';
+      data.results.forEach(r => {
+        const badge = r.action === 'created' ? '🟢 Tạo mới' : '🔵 Cập nhật';
+        html += `<div style="margin-bottom:2px;">• Dòng ${r.row}: ${badge} <b>${r.hostname}</b> (${r.device_id})</div>`;
+      });
+      html += '</div>';
+    }
+
+    if (data.errorDetails && data.errorDetails.length > 0) {
+      html += '<div style="color:var(--error); font-size:12px; max-height:100px; overflow-y:auto;">';
+      html += '<b>Danh sách dòng bị lỗi:</b><br>';
+      data.errorDetails.forEach(e => {
+        html += `• Dòng ${e.row}: ${e.error}<br>`;
+      });
+      html += '</div>';
+    }
+
+    resultContent.innerHTML = html;
+    fetchDevices();
+  } catch (err) {
+    resultContent.innerHTML = `<div style="color:var(--error); font-weight:700;">❌ Lỗi: ${err.message}</div>`;
+  } font-weight:700;
+  finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = '📥 Import Ngay';
+  }
+}
+
+// 2. Create Device Modal Functions
+function openCreateDeviceModal() {
+  const canCreate = currentUser && (currentUser.role === 'Admin' || currentUser.role === 'ITStaff');
+  if (!canCreate) {
+    alert('Bạn không có quyền tạo thiết bị mới. Chỉ Admin và IT Staff mới có quyền.');
+    return;
+  }
+  $('#create-device-modal').style.display = 'flex';
+  $('#create-device-hostname').value = '';
+  $('#create-device-ip').value = '';
+  $('#create-device-asset-tag').value = '';
+  $('#create-device-user').value = '';
+  $('#create-device-department').value = '';
+  $('#create-device-model').value = '';
+  $('#create-device-error').style.display = 'none';
+}
+
+function closeCreateDeviceModal() {
+  $('#create-device-modal').style.display = 'none';
+}
+
+async function submitCreateDevice() {
+  const hostname = $('#create-device-hostname').value.trim();
+  const ip_address = $('#create-device-ip').value.trim();
+  const asset_tag = $('#create-device-asset-tag').value.trim();
+  const asset_user = $('#create-device-user').value.trim();
+  const department = $('#create-device-department').value;
+  const model = $('#create-device-model').value.trim();
+  const errorEl = $('#create-device-error');
+
+  errorEl.style.display = 'none';
+
+  if (!hostname || !ip_address) {
+    errorEl.textContent = 'Vui lòng nhập đầy đủ Tên máy và Địa chỉ IP.';
+    errorEl.style.display = 'block';
+    return;
+  }
+
+  // IP Regex Validation
+  const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$/;
+  if (!ipRegex.test(ip_address)) {
+    errorEl.textContent = 'Địa chỉ IP không đúng định dạng. Ví dụ hợp lệ: 192.168.1.100';
+    errorEl.style.display = 'block';
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/devices/create-manual', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        hostname,
+        ip_address,
+        asset_tag,
+        asset_user,
+        department,
+        model
+      })
+    });
+
+    const data = await res.json();
+    if (!res.ok || !data.success) {
+      throw new Error(data.error || 'Tạo thiết bị thất bại');
+    }
+
+    closeCreateDeviceModal();
+    fetchDevices();
+    alert(`✅ ${data.message || 'Đã tạo thiết bị mới thành công!'}`);
+  } catch (err) {
+    errorEl.textContent = err.message;
+    errorEl.style.display = 'block';
+  }
+}
+
+// 3. Edit Device Modal Functions
+function openEditDeviceModal(deviceId) {
+  const canEdit = currentUser && (currentUser.role === 'Admin' || currentUser.role === 'ITStaff');
+  if (!canEdit) {
+    alert('Bạn không có quyền chỉnh sửa thông tin thiết bị.');
+    return;
+  }
+
+  const d = (_allDevices || []).find(item => item.device_id === deviceId);
+  if (!d) {
+    alert('Không tìm thấy thiết bị');
+    return;
+  }
+
+  $('#edit-device-id').value = d.device_id;
+  $('#edit-device-header-id').textContent = `Mã thiết bị: ${d.device_id}`;
+  $('#edit-device-hostname').value = d.hostname || '';
+  
+  // Extract main IP
+  let mainIp = '';
+  if (d.ipv4) {
+    try {
+      const parsed = typeof d.ipv4 === 'string' ? JSON.parse(d.ipv4) : d.ipv4;
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        mainIp = parsed[0].ip || '';
+      }
+    } catch (e) {
+      mainIp = String(d.ipv4);
+    }
+  }
+  $('#edit-device-ip').value = mainIp;
+  $('#edit-device-asset-tag').value = d.asset_tag || '';
+  $('#edit-device-user').value = d.asset_user || d.current_user || '';
+  $('#edit-device-department').value = d.department || '';
+  $('#edit-device-model').value = d.model || '';
+  $('#edit-device-error').style.display = 'none';
+
+  $('#edit-device-modal').style.display = 'flex';
+}
+
+function closeEditDeviceModal() {
+  $('#edit-device-modal').style.display = 'none';
+}
+
+async function submitEditDevice() {
+  const device_id = $('#edit-device-id').value;
+  const hostname = $('#edit-device-hostname').value.trim();
+  const ip_address = $('#edit-device-ip').value.trim();
+  const asset_tag = $('#edit-device-asset-tag').value.trim();
+  const asset_user = $('#edit-device-user').value.trim();
+  const department = $('#edit-device-department').value;
+  const model = $('#edit-device-model').value.trim();
+  const errorEl = $('#edit-device-error');
+
+  errorEl.style.display = 'none';
+
+  if (!hostname || !ip_address) {
+    errorEl.textContent = 'Vui lòng nhập Tên máy tính và Địa chỉ IP.';
+    errorEl.style.display = 'block';
+    return;
+  }
+
+  const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$/;
+  if (!ipRegex.test(ip_address)) {
+    errorEl.textContent = 'Địa chỉ IP không đúng định dạng.';
+    errorEl.style.display = 'block';
+    return;
+  }
+
+  try {
+    const res = await fetch(`/api/devices/${encodeURIComponent(device_id)}/edit`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        hostname,
+        ip_address,
+        asset_tag,
+        asset_user,
+        department,
+        model
+      })
+    });
+
+    const data = await res.json();
+    if (!res.ok || !data.success) {
+      throw new Error(data.error || 'Cập nhật thất bại');
+    }
+
+    closeEditDeviceModal();
+    fetchDevices();
+    alert(`✅ ${data.message || 'Đã cập nhật thiết bị thành công!'}`);
+  } catch (err) {
+    errorEl.textContent = err.message;
+    errorEl.style.display = 'block';
+  }
+}
 </html>

@@ -5,12 +5,20 @@ const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const cors = require('cors');
+const multer = require('multer');
+const csv = require('csv-parser');
 const { RuleEngine } = require('./rule-engine');
 const db = require('./db');
 const auth = require('./auth-config');
 const userAuth = require('./user-auth');
 const ExcelJS = require('exceljs');
 const QRCode = require('qrcode');
+
+// Configure multer for file uploads
+const upload = multer({ 
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
+});
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -291,6 +299,425 @@ app.post('/api/devices/metadata', userAuth.verifySessionMiddleware, userAuth.req
     });
     res.json({ status: 'ok' });
   } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ==========================================
+// DEVICE MANAGEMENT APIs - Bulk Import, Create, Edit
+// ==========================================
+
+// 1. API Bulk Import Excel
+app.post('/api/devices/bulk-import', userAuth.verifySessionMiddleware, userAuth.requireRole('Admin', 'ITStaff'), upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, error: 'Không tìm thấy file upload' });
+    }
+
+    const fileBuffer = req.file.buffer;
+    const fileName = req.file.originalname.toLowerCase();
+    const results = [];
+    const errors = [];
+
+    // Parse Excel file
+    if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) {
+      const workbook = new ExcelJS.Workbook();
+      await workbook.xlsx.load(fileBuffer);
+      const worksheet = workbook.worksheets[0];
+      
+      if (!worksheet) {
+        return res.status(400).json({ success: false, error: 'File Excel không có worksheet nào' });
+      }
+
+      const rows = [];
+      worksheet.eachRow((row, rowNumber) => {
+        if (rowNumber === 1) return; // Skip header
+        rows.push({
+          rowNumber,
+          hostname: row.getCell(1).value,
+          ip_address: row.getCell(2).value,
+          os: row.getCell(3).value,
+          asset_user: row.getCell(4).value,
+          department: row.getCell(5).value,
+          asset_tag: row.getCell(6).value,
+          model: row.getCell(7).value,
+          serial_number: row.getCell(8).value,
+          processor: row.getCell(9).value,
+          ram: row.getCell(10).value,
+          status: row.getCell(11).value,
+          notes: row.getCell(12).value
+        });
+      });
+
+      // Process each row
+      for (const row of rows) {
+        try {
+          // Validate required fields
+          if (!row.hostname || !row.ip_address) {
+            errors.push({ row: row.rowNumber, error: 'Hostname và IP là bắt buộc', data: row });
+            continue;
+          }
+
+          // Check if device exists by hostname or IP
+          const devices = db.getDevices();
+          const existing = devices.find(d => 
+            (d.hostname && d.hostname.toLowerCase() === String(row.hostname).toLowerCase()) ||
+            (d.ipv4 && String(d.ipv4).includes(String(row.ip_address)))
+          );
+
+          const deviceId = existing ? existing.device_id : `MANUAL-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+          const now = Date.now();
+
+          if (existing) {
+            // Update existing device
+            db.db.prepare(`
+              UPDATE devices 
+              SET hostname = ?, ipv4 = ?, asset_tag = ?, model = ?, department = ?, 
+                  asset_user = ?, updated_at = ?
+              WHERE device_id = ?
+            `).run(
+              String(row.hostname || ''),
+              JSON.stringify([{ ip: String(row.ip_address || ''), gateway: '' }]),
+              String(row.asset_tag || ''),
+              String(row.model || ''),
+              String(row.department || ''),
+              String(row.asset_user || ''),
+              now,
+              existing.device_id
+            );
+            results.push({ row: row.rowNumber, action: 'updated', device_id: existing.device_id, hostname: row.hostname });
+          } else {
+            // Insert new device
+            db.db.prepare(`
+              INSERT INTO devices (
+                device_id, hostname, ipv4, asset_tag, model, department, 
+                asset_user, is_online, last_seen, first_seen, updated_at,
+                fqdn, domain, current_user
+              ) VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?)
+            `).run(
+              deviceId,
+              String(row.hostname || ''),
+              JSON.stringify([{ ip: String(row.ip_address || ''), gateway: '' }]),
+              String(row.asset_tag || ''),
+              String(row.model || ''),
+              String(row.department || ''),
+              String(row.asset_user || ''),
+              now,
+              now,
+              now,
+              String(row.hostname || ''),
+              '',
+              String(row.asset_user || '')
+            );
+            results.push({ row: row.rowNumber, action: 'created', device_id: deviceId, hostname: row.hostname });
+          }
+        } catch (err) {
+          errors.push({ row: row.rowNumber, error: err.message, data: row });
+        }
+      }
+    } else if (fileName.endsWith('.csv')) {
+      // Parse CSV file
+      const stream = require('stream');
+      const bufferStream = new stream.PassThrough();
+      bufferStream.end(fileBuffer);
+
+      const rows = [];
+      await new Promise((resolve, reject) => {
+        bufferStream
+          .pipe(csv())
+          .on('data', (data) => rows.push(data))
+          .on('end', resolve)
+          .on('error', reject);
+      });
+
+      // Process CSV rows (similar logic as Excel)
+      for (let i = 0; i < rows.length; i++) {
+        const row = rows[i];
+        const rowNumber = i + 2; // +2 because header is row 1
+
+        try {
+          const hostname = row.hostname || row.Hostname;
+          const ip_address = row.ip_address || row.IP || row['IP Address'];
+
+          if (!hostname || !ip_address) {
+            errors.push({ row: rowNumber, error: 'Hostname và IP là bắt buộc', data: row });
+            continue;
+          }
+
+          const devices = db.getDevices();
+          const existing = devices.find(d => 
+            (d.hostname && d.hostname.toLowerCase() === String(hostname).toLowerCase()) ||
+            (d.ipv4 && String(d.ipv4).includes(String(ip_address)))
+          );
+
+          const deviceId = existing ? existing.device_id : `MANUAL-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+          const now = Date.now();
+
+          if (existing) {
+            db.db.prepare(`
+              UPDATE devices 
+              SET hostname = ?, ipv4 = ?, asset_tag = ?, model = ?, department = ?, 
+                  asset_user = ?, updated_at = ?
+              WHERE device_id = ?
+            `).run(
+              String(hostname),
+              JSON.stringify([{ ip: String(ip_address), gateway: '' }]),
+              String(row.asset_tag || row.AssetTag || ''),
+              String(row.model || row.Model || ''),
+              String(row.department || row.Department || ''),
+              String(row.asset_user || row.User || ''),
+              now,
+              existing.device_id
+            );
+            results.push({ row: rowNumber, action: 'updated', device_id: existing.device_id, hostname });
+          } else {
+            db.db.prepare(`
+              INSERT INTO devices (
+                device_id, hostname, ipv4, asset_tag, model, department, 
+                asset_user, is_online, last_seen, first_seen, updated_at,
+                fqdn, domain, current_user
+              ) VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?)
+            `).run(
+              deviceId,
+              String(hostname),
+              JSON.stringify([{ ip: String(ip_address), gateway: '' }]),
+              String(row.asset_tag || row.AssetTag || ''),
+              String(row.model || row.Model || ''),
+              String(row.department || row.Department || ''),
+              String(row.asset_user || row.User || ''),
+              now,
+              now,
+              now,
+              String(hostname),
+              '',
+              String(row.asset_user || row.User || '')
+            );
+            results.push({ row: rowNumber, action: 'created', device_id: deviceId, hostname });
+          }
+        } catch (err) {
+          errors.push({ row: rowNumber, error: err.message, data: row });
+        }
+      }
+    } else {
+      return res.status(400).json({ success: false, error: 'Định dạng file không được hỗ trợ. Chỉ chấp nhận .xlsx, .xls, .csv' });
+    }
+
+    res.json({
+      success: true,
+      imported: results.length,
+      errors: errors.length,
+      results,
+      errorDetails: errors
+    });
+  } catch (err) {
+    console.error('Lỗi bulk import:', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// 2. API Tạo thiết bị thủ công
+app.post('/api/devices/create-manual', userAuth.verifySessionMiddleware, userAuth.requireRole('Admin', 'ITStaff'), (req, res) => {
+  try {
+    const { hostname, ip_address, os, asset_user, department, asset_tag, model, serial_number, processor, ram, status, notes } = req.body || {};
+
+    // Validate required fields
+    if (!hostname || !ip_address) {
+      return res.status(400).json({ success: false, error: 'Hostname và IP Address là bắt buộc' });
+    }
+
+    // Validate IP format
+    const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$/;
+    if (!ipRegex.test(ip_address)) {
+      return res.status(400).json({ success: false, error: 'Địa chỉ IP không hợp lệ' });
+    }
+
+    // Check for duplicates
+    const devices = db.getDevices();
+    const duplicate = devices.find(d => 
+      (d.hostname && d.hostname.toLowerCase() === hostname.toLowerCase()) ||
+      (d.asset_tag && asset_tag && d.asset_tag.toLowerCase() === asset_tag.toLowerCase())
+    );
+
+    if (duplicate) {
+      return res.status(400).json({ 
+        success: false, 
+        error: `Thiết bị đã tồn tại: ${duplicate.hostname} (${duplicate.device_id})` 
+      });
+    }
+
+    const deviceId = `MANUAL-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const now = Date.now();
+
+    db.db.prepare(`
+      INSERT INTO devices (
+        device_id, hostname, fqdn, domain, current_user, ipv4, 
+        asset_tag, model, department, asset_user, 
+        is_online, last_seen, first_seen, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?)
+    `).run(
+      deviceId,
+      hostname,
+      hostname,
+      '',
+      asset_user || '',
+      JSON.stringify([{ ip: ip_address, gateway: '' }]),
+      asset_tag || '',
+      model || '',
+      department || '',
+      asset_user || '',
+      now,
+      now,
+      now
+    );
+
+    res.json({
+      success: true,
+      device_id: deviceId,
+      message: `Đã tạo thiết bị ${hostname} thành công`
+    });
+  } catch (err) {
+    console.error('Lỗi tạo thiết bị thủ công:', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// 3. API Chỉnh sửa thiết bị
+app.put('/api/devices/:device_id/edit', userAuth.verifySessionMiddleware, userAuth.requireRole('Admin', 'ITStaff'), (req, res) => {
+  try {
+    const { device_id } = req.params;
+    const { hostname, ip_address, os, asset_user, department, asset_tag, model, serial_number, processor, ram, status, notes } = req.body || {};
+
+    // Check if device exists
+    const devices = db.getDevices();
+    const existing = devices.find(d => d.device_id === device_id);
+
+    if (!existing) {
+      return res.status(404).json({ success: false, error: 'Không tìm thấy thiết bị' });
+    }
+
+    // Validate required fields
+    if (!hostname || !ip_address) {
+      return res.status(400).json({ success: false, error: 'Hostname và IP Address là bắt buộc' });
+    }
+
+    // Validate IP format
+    const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$/;
+    if (!ipRegex.test(ip_address)) {
+      return res.status(400).json({ success: false, error: 'Địa chỉ IP không hợp lệ' });
+    }
+
+    // Check for hostname/asset_tag conflicts with other devices
+    const duplicate = devices.find(d => 
+      d.device_id !== device_id && (
+        (d.hostname && d.hostname.toLowerCase() === hostname.toLowerCase()) ||
+        (d.asset_tag && asset_tag && d.asset_tag.toLowerCase() === asset_tag.toLowerCase())
+      )
+    );
+
+    if (duplicate) {
+      return res.status(400).json({ 
+        success: false, 
+        error: `Xung đột với thiết bị khác: ${duplicate.hostname} (${duplicate.device_id})` 
+      });
+    }
+
+    const now = Date.now();
+
+    db.db.prepare(`
+      UPDATE devices 
+      SET hostname = ?, fqdn = ?, ipv4 = ?, asset_tag = ?, model = ?, 
+          department = ?, asset_user = ?, current_user = ?, updated_at = ?
+      WHERE device_id = ?
+    `).run(
+      hostname,
+      hostname,
+      JSON.stringify([{ ip: ip_address, gateway: '' }]),
+      asset_tag || '',
+      model || '',
+      department || '',
+      asset_user || '',
+      asset_user || '',
+      now,
+      device_id
+    );
+
+    res.json({
+      success: true,
+      message: `Đã cập nhật thiết bị ${hostname} thành công`
+    });
+  } catch (err) {
+    console.error('Lỗi chỉnh sửa thiết bị:', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// API Download Template Excel
+app.get('/api/devices/template.xlsx', userAuth.verifySessionMiddleware, async (req, res) => {
+  try {
+    const workbook = new ExcelJS.Workbook();
+    workbook.creator = 'Windows Agent Dashboard';
+    const sheet = workbook.addWorksheet('Template');
+
+    // Define columns
+    sheet.columns = [
+      { header: 'Hostname *', key: 'hostname', width: 20 },
+      { header: 'IP Address *', key: 'ip_address', width: 18 },
+      { header: 'OS', key: 'os', width: 15 },
+      { header: 'Người sử dụng', key: 'asset_user', width: 22 },
+      { header: 'Phòng ban', key: 'department', width: 20 },
+      { header: 'Mã tài sản', key: 'asset_tag', width: 18 },
+      { header: 'Model', key: 'model', width: 20 },
+      { header: 'Serial Number', key: 'serial_number', width: 25 },
+      { header: 'Processor', key: 'processor', width: 30 },
+      { header: 'RAM (GB)', key: 'ram', width: 12 },
+      { header: 'Trạng thái', key: 'status', width: 15 },
+      { header: 'Ghi chú', key: 'notes', width: 30 }
+    ];
+
+    // Style header
+    sheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
+    sheet.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1E40AF' } };
+    sheet.getRow(1).alignment = { vertical: 'middle', horizontal: 'center' };
+
+    // Add sample data
+    sheet.addRow({
+      hostname: 'PC-IT-001',
+      ip_address: '192.168.1.100',
+      os: 'Windows 10 Pro',
+      asset_user: 'Nguyen Van A',
+      department: 'IT',
+      asset_tag: 'IT-2024-001',
+      model: 'Dell OptiPlex 7090',
+      serial_number: 'SN123456789',
+      processor: 'Intel Core i7-10700',
+      ram: '16',
+      status: 'Active',
+      notes: 'Thiết bị mới'
+    });
+
+    sheet.addRow({
+      hostname: 'LAPTOP-HR-002',
+      ip_address: '192.168.1.101',
+      os: 'Windows 11 Pro',
+      asset_user: 'Tran Thi B',
+      department: 'HR',
+      asset_tag: 'HR-2024-002',
+      model: 'HP ProBook 450 G8',
+      serial_number: 'SN987654321',
+      processor: 'Intel Core i5-1135G7',
+      ram: '8',
+      status: 'Active',
+      notes: ''
+    });
+
+    // Set response headers
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', 'attachment; filename="device-import-template.xlsx"');
+
+    await workbook.xlsx.write(res);
+    res.end();
+  } catch (err) {
+    console.error('Lỗi tạo template Excel:', err);
     res.status(500).json({ error: err.message });
   }
 });

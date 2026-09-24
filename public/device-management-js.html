@@ -1,0 +1,278 @@
+
+// ==========================================
+// DEVICE MANAGEMENT JS FUNCTIONS
+// ==========================================
+
+// 1. Bulk Import Modal Functions
+function openBulkImportModal() {
+  const canImport = currentUser && (currentUser.role === 'Admin' || currentUser.role === 'ITStaff');
+  if (!canImport) {
+    alert('Bạn không có quyền import danh sách thiết bị. Chỉ Admin và IT Staff mới có quyền.');
+    return;
+  }
+  $('#bulk-import-modal').style.display = 'flex';
+  $('#bulk-import-file').value = '';
+  $('#bulk-import-filename').style.display = 'none';
+  $('#bulk-import-result').style.display = 'none';
+  $('#bulk-import-submit').disabled = true;
+}
+
+function closeBulkImportModal() {
+  $('#bulk-import-modal').style.display = 'none';
+}
+
+function downloadDeviceTemplate() {
+  window.location.href = '/api/devices/template.xlsx';
+}
+
+function previewBulkImport() {
+  const fileInput = $('#bulk-import-file');
+  const filenameEl = $('#bulk-import-filename');
+  const submitBtn = $('#bulk-import-submit');
+
+  if (fileInput.files.length > 0) {
+    const file = fileInput.files[0];
+    filenameEl.textContent = `📄 Đã chọn file: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+    filenameEl.style.display = 'block';
+    submitBtn.disabled = false;
+  } else {
+    filenameEl.style.display = 'none';
+    submitBtn.disabled = true;
+  }
+}
+
+async function submitBulkImport() {
+  const fileInput = $('#bulk-import-file');
+  const submitBtn = $('#bulk-import-submit');
+  const resultDiv = $('#bulk-import-result');
+  const resultContent = $('#bulk-import-result-content');
+
+  if (!fileInput.files.length) {
+    alert('Vui lòng chọn file Excel hoặc CSV');
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append('file', fileInput.files[0]);
+
+  submitBtn.disabled = true;
+  submitBtn.textContent = '⏳ Đang xử lý...';
+  resultDiv.style.display = 'block';
+  resultContent.innerHTML = '<div style="color:var(--accent);">⏳ Đang đọc dữ liệu và xử lý import...</div>';
+
+  try {
+    const res = await fetch('/api/devices/bulk-import', {
+      method: 'POST',
+      body: formData
+    });
+
+    const data = await res.json();
+    if (!res.ok || !data.success) {
+      throw new Error(data.error || 'Import thất bại');
+    }
+
+    let html = `
+      <div style="color:var(--success); font-weight:700; margin-bottom:8px;">
+        ✅ Đã hoàn tất import! Thành công: ${data.imported} thiết bị, Lỗi: ${data.errors}
+      </div>
+    `;
+
+    if (data.results && data.results.length > 0) {
+      html += '<div style="font-size:12px; max-height:150px; overflow-y:auto; margin-bottom:8px;">';
+      data.results.forEach(r => {
+        const badge = r.action === 'created' ? '🟢 Tạo mới' : '🔵 Cập nhật';
+        html += `<div style="margin-bottom:2px;">• Dòng ${r.row}: ${badge} <b>${r.hostname}</b> (${r.device_id})</div>`;
+      });
+      html += '</div>';
+    }
+
+    if (data.errorDetails && data.errorDetails.length > 0) {
+      html += '<div style="color:var(--error); font-size:12px; max-height:100px; overflow-y:auto;">';
+      html += '<b>Danh sách dòng bị lỗi:</b><br>';
+      data.errorDetails.forEach(e => {
+        html += `• Dòng ${e.row}: ${e.error}<br>`;
+      });
+      html += '</div>';
+    }
+
+    resultContent.innerHTML = html;
+    fetchDevices();
+  } catch (err) {
+    resultContent.innerHTML = `<div style="color:var(--error); font-weight:700;">❌ Lỗi: ${err.message}</div>`;
+  } font-weight:700;
+  finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = '📥 Import Ngay';
+  }
+}
+
+// 2. Create Device Modal Functions
+function openCreateDeviceModal() {
+  const canCreate = currentUser && (currentUser.role === 'Admin' || currentUser.role === 'ITStaff');
+  if (!canCreate) {
+    alert('Bạn không có quyền tạo thiết bị mới. Chỉ Admin và IT Staff mới có quyền.');
+    return;
+  }
+  $('#create-device-modal').style.display = 'flex';
+  $('#create-device-hostname').value = '';
+  $('#create-device-ip').value = '';
+  $('#create-device-asset-tag').value = '';
+  $('#create-device-user').value = '';
+  $('#create-device-department').value = '';
+  $('#create-device-model').value = '';
+  $('#create-device-error').style.display = 'none';
+}
+
+function closeCreateDeviceModal() {
+  $('#create-device-modal').style.display = 'none';
+}
+
+async function submitCreateDevice() {
+  const hostname = $('#create-device-hostname').value.trim();
+  const ip_address = $('#create-device-ip').value.trim();
+  const asset_tag = $('#create-device-asset-tag').value.trim();
+  const asset_user = $('#create-device-user').value.trim();
+  const department = $('#create-device-department').value;
+  const model = $('#create-device-model').value.trim();
+  const errorEl = $('#create-device-error');
+
+  errorEl.style.display = 'none';
+
+  if (!hostname || !ip_address) {
+    errorEl.textContent = 'Vui lòng nhập đầy đủ Tên máy và Địa chỉ IP.';
+    errorEl.style.display = 'block';
+    return;
+  }
+
+  // IP Regex Validation
+  const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$/;
+  if (!ipRegex.test(ip_address)) {
+    errorEl.textContent = 'Địa chỉ IP không đúng định dạng. Ví dụ hợp lệ: 192.168.1.100';
+    errorEl.style.display = 'block';
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/devices/create-manual', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        hostname,
+        ip_address,
+        asset_tag,
+        asset_user,
+        department,
+        model
+      })
+    });
+
+    const data = await res.json();
+    if (!res.ok || !data.success) {
+      throw new Error(data.error || 'Tạo thiết bị thất bại');
+    }
+
+    closeCreateDeviceModal();
+    fetchDevices();
+    alert(`✅ ${data.message || 'Đã tạo thiết bị mới thành công!'}`);
+  } catch (err) {
+    errorEl.textContent = err.message;
+    errorEl.style.display = 'block';
+  }
+}
+
+// 3. Edit Device Modal Functions
+function openEditDeviceModal(deviceId) {
+  const canEdit = currentUser && (currentUser.role === 'Admin' || currentUser.role === 'ITStaff');
+  if (!canEdit) {
+    alert('Bạn không có quyền chỉnh sửa thông tin thiết bị.');
+    return;
+  }
+
+  const d = (_allDevices || []).find(item => item.device_id === deviceId);
+  if (!d) {
+    alert('Không tìm thấy thiết bị');
+    return;
+  }
+
+  $('#edit-device-id').value = d.device_id;
+  $('#edit-device-header-id').textContent = `Mã thiết bị: ${d.device_id}`;
+  $('#edit-device-hostname').value = d.hostname || '';
+  
+  // Extract main IP
+  let mainIp = '';
+  if (d.ipv4) {
+    try {
+      const parsed = typeof d.ipv4 === 'string' ? JSON.parse(d.ipv4) : d.ipv4;
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        mainIp = parsed[0].ip || '';
+      }
+    } catch (e) {
+      mainIp = String(d.ipv4);
+    }
+  }
+  $('#edit-device-ip').value = mainIp;
+  $('#edit-device-asset-tag').value = d.asset_tag || '';
+  $('#edit-device-user').value = d.asset_user || d.current_user || '';
+  $('#edit-device-department').value = d.department || '';
+  $('#edit-device-model').value = d.model || '';
+  $('#edit-device-error').style.display = 'none';
+
+  $('#edit-device-modal').style.display = 'flex';
+}
+
+function closeEditDeviceModal() {
+  $('#edit-device-modal').style.display = 'none';
+}
+
+async function submitEditDevice() {
+  const device_id = $('#edit-device-id').value;
+  const hostname = $('#edit-device-hostname').value.trim();
+  const ip_address = $('#edit-device-ip').value.trim();
+  const asset_tag = $('#edit-device-asset-tag').value.trim();
+  const asset_user = $('#edit-device-user').value.trim();
+  const department = $('#edit-device-department').value;
+  const model = $('#edit-device-model').value.trim();
+  const errorEl = $('#edit-device-error');
+
+  errorEl.style.display = 'none';
+
+  if (!hostname || !ip_address) {
+    errorEl.textContent = 'Vui lòng nhập Tên máy tính và Địa chỉ IP.';
+    errorEl.style.display = 'block';
+    return;
+  }
+
+  const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$/;
+  if (!ipRegex.test(ip_address)) {
+    errorEl.textContent = 'Địa chỉ IP không đúng định dạng.';
+    errorEl.style.display = 'block';
+    return;
+  }
+
+  try {
+    const res = await fetch(`/api/devices/${encodeURIComponent(device_id)}/edit`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        hostname,
+        ip_address,
+        asset_tag,
+        asset_user,
+        department,
+        model
+      })
+    });
+
+    const data = await res.json();
+    if (!res.ok || !data.success) {
+      throw new Error(data.error || 'Cập nhật thất bại');
+    }
+
+    closeEditDeviceModal();
+    fetchDevices();
+    alert(`✅ ${data.message || 'Đã cập nhật thiết bị thành công!'}`);
+  } catch (err) {
+    errorEl.textContent = err.message;
+    errorEl.style.display = 'block';
+  }
+}
