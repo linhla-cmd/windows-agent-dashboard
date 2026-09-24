@@ -102,6 +102,13 @@
       text-transform: uppercase; letter-spacing: 2px;
       padding: 0 12px; margin-bottom: 12px;
     }
+    .nav-section-title {
+      font-size: 10px; font-weight: 800; color: var(--fg3);
+      text-transform: uppercase; letter-spacing: 2px;
+      padding: 16px 12px 12px 12px;
+      margin-top: 12px;
+      border-top: 1px solid var(--border-light);
+    }
     .nav-item {
       display: flex; align-items: center; gap: 12px;
       padding: 12px; border-radius: 8px;
@@ -1225,12 +1232,12 @@
           <span>Lịch sử quét</span>
         </a>
 
-        <div class="nav-label" style="margin-top: 20px; border-top: 1px solid var(--border-light); padding-top: 16px;">Phiếu Kiểm kê</div>
+        <div class="nav-section-title">Quản lý Phiếu</div>
         <a class="nav-item" onclick="openCreateTicketModal()">
           <span class="nav-icon">📋</span>
           <span>Tạo Phiếu Kiểm kê</span>
         </a>
-        <a class="nav-item" onclick="document.getElementById('inventoryTicketsSection').scrollIntoView({behavior: 'smooth'})">
+        <a class="nav-item" onclick="openTicketListModal()">
           <span class="nav-icon">📊</span>
           <span>Danh sách Phiếu</span>
         </a>
@@ -1343,7 +1350,7 @@
       </div>
 
       <!-- Inventory Tickets Section -->
-      <div class="inventory-section">
+      <div class="inventory-section" id="inventoryTicketsSection">
         <div class="inventory-section-header">
           <h2>📋 Danh sách Phiếu Kiểm kê</h2>
           <button class="btn btn-secondary btn-small" onclick="loadInventoryTickets()">
@@ -2018,6 +2025,14 @@
       setTimeout(() => {
         toast.remove();
       }, 3000);
+    }
+
+    function openTicketListModal() {
+      const section = document.getElementById('inventoryTicketsSection');
+      if (section) {
+        section.scrollIntoView({ behavior: 'smooth' });
+        loadInventoryTickets();
+      }
     }
 
     // ══════════════════════════════════════════
