@@ -5670,8 +5670,7 @@ Thao tác này sẽ xóa toàn bộ danh sách dữ liệu kiểm kê liên quan
     </div>
   </div>
 
-</body>
-
+<script>
 // ==========================================
 // DEVICE MANAGEMENT JS FUNCTIONS
 // ==========================================
@@ -5772,8 +5771,7 @@ async function submitBulkImport() {
     fetchDevices();
   } catch (err) {
     resultContent.innerHTML = `<div style="color:var(--error); font-weight:700;">❌ Lỗi: ${err.message}</div>`;
-  } font-weight:700;
-  finally {
+  } finally {
     submitBtn.disabled = false;
     submitBtn.textContent = '📥 Import Ngay';
   }
@@ -5949,4 +5947,6 @@ async function submitEditDevice() {
     errorEl.style.display = 'block';
   }
 }
+</script>
+</body>
 </html>
