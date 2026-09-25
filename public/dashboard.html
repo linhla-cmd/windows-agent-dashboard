@@ -2661,6 +2661,47 @@
     </div>
   </div>
 </div>
+
+<!-- Delete Confirmation Modal -->
+<div id="delete-device-modal" style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(15,23,42,0.85); backdrop-filter:blur(8px); align-items:center; justify-content:center; padding:16px;">
+  <div style="background:var(--bg-elevated); border-radius:16px; max-width:480px; width:90%; box-shadow:var(--shadow-lg); border:1px solid var(--border);">
+    <div style="padding:24px 28px; border-bottom:1px solid var(--border);">
+      <h3 style="font-size:20px; font-weight:700; color:var(--error); margin:0;">⚠️ Xác nhận xóa thiết bị</h3>
+    </div>
+    
+    <div style="padding:24px 28px;">
+      <p style="margin:0 0 16px 0; color:var(--text-secondary);">
+        Bạn có chắc chắn muốn <strong style="color:var(--error);">xóa vĩnh viễn</strong> thiết bị này?
+      </p>
+      
+      <div style="background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); border-radius:8px; padding:12px; margin-bottom:16px;">
+        <div style="font-size:14px; font-weight:600; color:var(--text-primary); margin-bottom:4px;">
+          🖥️ <span id="delete-device-hostname">-</span>
+        </div>
+        <div style="font-size:12px; color:var(--text-tertiary);">
+          Device ID: <span id="delete-device-id" style="font-family:var(--font-mono);">-</span>
+        </div>
+      </div>
+      
+      <div style="background:rgba(239,68,68,0.1); border-left:3px solid var(--error); padding:12px; border-radius:4px;">
+        <p style="margin:0; font-size:13px; color:var(--text-secondary);">
+          <strong>⚠️ Lưu ý:</strong> Hành động này không thể hoàn tác. Dữ liệu sẽ bị xóa vĩnh viễn khỏi cơ sở dữ liệu.
+        </p>
+      </div>
+      
+      <div id="delete-device-error" style="display:none; margin-top:12px; padding:10px; background:rgba(239,68,68,0.1); border-radius:6px; color:var(--error); font-size:13px;"></div>
+    </div>
+    
+    <div style="padding:16px 28px; border-top:1px solid var(--border); display:flex; gap:12px; justify-content:flex-end;">
+      <button onclick="closeDeleteDeviceModal()" class="btn" style="background:var(--bg); border:1px solid var(--border);">
+        Hủy
+      </button>
+      <button onclick="executeDeleteDevice()" id="delete-device-submit" class="btn" style="background:var(--error); color:#fff; font-weight:600;">
+        🗑️ Xác nhận xóa
+      </button>
+    </div>
+  </div>
+</div>
       <div id="tab-users" class="tab-view" style="display: none;">
         <div class="admin-grid">
           <div class="card">
@@ -2949,6 +2990,13 @@ function renderDevicesGrid(devices) {
         ${(currentUser && (currentUser.role === 'Admin' || currentUser.role === 'ITStaff' || currentUser.role === 'Operator')) ? `<button class="btn-action-glossy" onclick="openDeviceMetadata('${d.device_id}')">` : `<button class="btn-action-glossy" style="display:none;" disabled>`}
           ${(d.asset_tag || d.asset_user || d.model || d.department) ? '✏️ Hồ sơ' : '📋 Ghi nhận'}
         </button>
+        ${(currentUser && currentUser.role === 'Admin') ? `
+          <button class="btn-action-glossy" onclick="confirmDeleteDevice('${d.device_id}', '${(d.hostname || d.device_id).replace(/'/g, "\\'")}')" 
+            style="background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.4); color:#ef4444;" 
+            title="Xóa thiết bị vĩnh viễn">
+            🗑️ Xóa
+          </button>
+        ` : ''}
       </div>
     `;
     gridView.appendChild(card);
@@ -4884,6 +4932,13 @@ function renderDevices(devices, updateCache = true) {
           ${(currentUser && (currentUser.role === 'Admin' || currentUser.role === 'ITStaff' || currentUser.role === 'Operator')) ? `<button class="btn-action-glossy" onclick='openDeviceMetadata(${JSON.stringify(d.device_id)})' style="padding:2px 6px; font-size:11px;">` : `<button class="btn-action-glossy" style="display:none;" disabled>`}
             ${(d.asset_tag || d.asset_user || d.model || d.department || d.monitor || d.printer || d.peripherals) ? '✏️ Hồ sơ' : '📋 Ghi nhận'}
           </button>
+          ${(currentUser && currentUser.role === 'Admin') ? `
+            <button class="btn-action-glossy" onclick='confirmDeleteDevice(${JSON.stringify(d.device_id)}, ${JSON.stringify(d.hostname || d.device_id)})' 
+              style="background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.4); color:#ef4444; padding:2px 6px; font-size:11px;" 
+              title="Xóa thiết bị vĩnh viễn">
+              🗑️ Xóa
+            </button>
+          ` : ''}
         </div>
       </td>
       <td><span style="font-size:12px;color:var(--fg3); font-weight:500;">🕐 ${since}</span></td>
@@ -5945,6 +6000,60 @@ async function submitEditDevice() {
   } catch (err) {
     errorEl.textContent = err.message;
     errorEl.style.display = 'block';
+  }
+}
+
+// 4. Delete Device Functions
+let _deleteDeviceId = null;
+
+function confirmDeleteDevice(deviceId, hostname) {
+  const canDelete = currentUser && currentUser.role === 'Admin';
+  if (!canDelete) {
+    alert('Chỉ Admin mới có quyền xóa thiết bị.');
+    return;
+  }
+  
+  _deleteDeviceId = deviceId;
+  $('#delete-device-modal').style.display = 'flex';
+  $('#delete-device-hostname').textContent = hostname || deviceId;
+  $('#delete-device-id').textContent = deviceId;
+  $('#delete-device-error').style.display = 'none';
+}
+
+function closeDeleteDeviceModal() {
+  $('#delete-device-modal').style.display = 'none';
+  _deleteDeviceId = null;
+}
+
+async function executeDeleteDevice() {
+  if (!_deleteDeviceId) return;
+  
+  const submitBtn = $('#delete-device-submit');
+  const errorEl = $('#delete-device-error');
+  
+  submitBtn.disabled = true;
+  submitBtn.textContent = '⏳ Đang xóa...';
+  errorEl.style.display = 'none';
+  
+  try {
+    const res = await fetch(`/api/devices/${_deleteDeviceId}`, {
+      method: 'DELETE'
+    });
+    
+    const data = await res.json();
+    if (!res.ok || !data.success) {
+      throw new Error(data.error || 'Xóa thiết bị thất bại');
+    }
+    
+    closeDeleteDeviceModal();
+    fetchDevices(); // Refresh danh sách thiết bị
+    alert('✅ Đã xóa thiết bị thành công!');
+  } catch (err) {
+    errorEl.textContent = err.message;
+    errorEl.style.display = 'block';
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = '🗑️ Xác nhận xóa';
   }
 }
 </script>

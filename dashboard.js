@@ -651,6 +651,24 @@ app.put('/api/devices/:device_id/edit', userAuth.verifySessionMiddleware, userAu
   }
 });
 
+// 4. API Xóa thiết bị vĩnh viễn (Admin only)
+app.delete('/api/devices/:device_id', userAuth.verifySessionMiddleware, userAuth.requireRole('Admin'), (req, res) => {
+  try {
+    const { device_id } = req.params;
+    
+    const result = db.db.prepare('DELETE FROM devices WHERE device_id = ?').run(device_id);
+    
+    if (result.changes === 0) {
+      return res.status(404).json({ success: false, error: 'Không tìm thấy thiết bị' });
+    }
+    
+    res.json({ success: true, message: 'Đã xóa thiết bị thành công' });
+  } catch (err) {
+    console.error('Error deleting device:', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // API Download Template Excel
 app.get('/api/devices/template.xlsx', userAuth.verifySessionMiddleware, async (req, res) => {
   try {
